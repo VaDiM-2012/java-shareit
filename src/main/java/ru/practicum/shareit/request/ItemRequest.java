@@ -1,7 +1,15 @@
 package ru.practicum.shareit.request;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 /**
- * TODO Sprint add-item-requests.
+ * Заглушка модели ItemRequest, необходимая для компиляции Item.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemRequest {
+    private Long id;
 }
