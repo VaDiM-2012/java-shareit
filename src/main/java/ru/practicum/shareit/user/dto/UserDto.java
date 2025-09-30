@@ -19,11 +19,10 @@ public class UserDto {
     private Long id;
 
     @Size(max = 255, message = "Имя не может быть длиннее 255 символов")
-    @NotBlank(message = "Имя не может быть пустым")
     private String name;
 
     @Email(message = "Email должен быть валидным")
-    @NotBlank(message = "Email не может быть пустым")
     @Size(max = 255, message = "Email не может быть длиннее 255 символов")
+    @NotBlank(message = "Email не может быть пустым")
     private String email;
 }

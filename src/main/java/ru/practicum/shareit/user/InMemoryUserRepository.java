@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 
 import java.util.*;
@@ -46,7 +47,7 @@ public class InMemoryUserRepository {
     public User findById(Long id) {
         log.info("Попытка получения пользователя с ID: {}", id);
         if (!users.containsKey(id)) {
-            throw new ValidationException("Пользователь с ID " + id + " не найден.");
+            throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
         return users.get(id);
     }

@@ -70,7 +70,7 @@ public class ItemService {
         // 1. Проверка, что пользователь является владельцем
         if (!existingItem.getOwner().getId().equals(userId)) {
             log.error("Попытка обновления вещи не владельцем. Владелец ID={}, Запрашивающий пользователь ID={}", existingItem.getOwner().getId(), userId);
-            throw new ValidationException("Пользователь с ID=" + userId + " не является владельцем вещи ID=" + itemId);
+            throw new NotFoundException("Пользователь с ID=" + userId + " не является владельцем вещи ID=" + itemId);
         }
 
         // 2. Обновление только не-null полей (PATCH-логика)

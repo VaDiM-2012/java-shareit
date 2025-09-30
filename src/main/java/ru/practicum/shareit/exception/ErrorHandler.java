@@ -1,72 +1,84 @@
 package ru.practicum.shareit.exception;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 /**
- * Глобальный обработчик исключений для приложения.
- * Перехватывает бизнес-исключения и возвращает соответствующие HTTP-статусы.
+ * Глобальный обработчик исключений для приложения ShareIt.
+ * Перехватывает бизнес-исключения (404, 409) и ошибки валидации Spring (400).
  */
-@Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
     /**
      * Обрабатывает исключения типа NotFoundException (404 Not Found).
+     *
+     * @param e Перехваченное исключение.
+     * @return Структурированный JSON-ответ с ошибкой 404.
      */
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handleNotFoundException(final NotFoundException e) {
-        log.error("Обработано исключение: {}", e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body("Пользователь не найден");
+    @ResponseStatus(HttpStatus.NOT_FOUND) // 404
+    public ErrorResponse handleNotFoundException(final NotFoundException e) {
+        return new ErrorResponse("Объект не найден", e.getMessage());
     }
 
     /**
      * Обрабатывает исключения типа ValidationException (409 Conflict).
-     * Используется для конфликтов уникальности, например, при дублировании email.
-     */
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<String> handleValidationException(final ValidationException e) {
-        log.error("Обработано исключение: {}", e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body("Нарушение уникальности: email уже существует");
-    }
-
-        /**
-     * Обрабатывает MethodArgumentNotValidException, которое выбрасывается, когда
-     * @Valid или @Validated не проходят проверку.
-     * Возвращает HTTP 400 Bad Request с деталями ошибок валидации.
+     * Используется для конфликтов уникальности (email) или нарушений прав доступа.
      *
      * @param e Перехваченное исключение.
-     * @return ResponseEntity с HTTP-статусом 400 и структурой ошибок.
+     * @return Структурированный JSON-ответ с ошибкой 409.
+     */
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT) // 409
+    public ErrorResponse handleValidationException(final ValidationException e) {
+        return new ErrorResponse("Нарушение бизнес-правил", e.getMessage());
+    }
+
+    // --- Обработчики HTTP 400 Bad Request ---
+
+    /**
+     * Обрабатывает ошибки валидации DTO, помеченных @Valid (HTTP 400 Bad Request).
+     * Перехватывает MethodArgumentNotValidException, которое выбрасывается при
+     * нарушении аннотаций @NotBlank, @NotNull и т.д. в DTO.
+     *
+     * @param e Перехваченное исключение.
+     * @return Структурированный JSON-ответ с ошибкой 400.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Collection<String>> handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-        log.warn("Получено исключение MethodArgumentNotValidException");
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+        String defaultMessage = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
+        return new ErrorResponse("Ошибка валидации DTO", defaultMessage);
+    }
 
-        // 1. Создаем карту для сбора всех ошибок валидации
-        Map<String, String> errors = new HashMap<>();
+    /**
+     * Обрабатывает исключения, когда обязательный заголовок (например, X-Sharer-User-Id) отсутствует (HTTP 400).
+     *
+     * @param e Перехваченное исключение.
+     * @return Структурированный JSON-ответ с ошибкой 400.
+     */
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public ErrorResponse handleMissingRequestHeaderException(final MissingRequestHeaderException e) {
+        return new ErrorResponse("Отсутствует обязательный заголовок", "Заголовок " + e.getHeaderName() + " обязателен.");
+    }
 
-        // 2. Итерируемся по всем ошибкам, собранным BindingResult
-        e.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage()) // Ключ - имя поля, Значение - сообщение об ошибке
-        );
-
-        log.debug("Собранные ошибки валидации: {}", errors);
-
-        // 3. Возвращаем HTTP 400 Bad Request и список ошибок
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST) // 400
-                .body(errors.values());
+    /**
+     * Универсальный обработчик для всех необработанных RuntimeException (HTTP 500).
+     *
+     * @param e Перехваченное исключение.
+     * @return Структурированный JSON-ответ с ошибкой 500.
+     */
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) // 500
+    public ErrorResponse handleThrowable(final Throwable e) {
+        return new ErrorResponse("Непредвиденная ошибка сервера", e.getMessage());
     }
 }
