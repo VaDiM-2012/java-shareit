@@ -9,7 +9,9 @@ import ru.practicum.shareit.request.model.ItemRequest;
  */
 public final class ItemRequestMapper {
 
-    private ItemRequestMapper() {}
+    private ItemRequestMapper() {
+
+    }
 
     /**
      * Преобразует модель ItemRequest в DTO ItemRequestDto.

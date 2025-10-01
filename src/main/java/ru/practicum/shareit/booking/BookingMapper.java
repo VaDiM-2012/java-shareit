@@ -9,7 +9,9 @@ import ru.practicum.shareit.booking.model.Booking;
  */
 public final class BookingMapper {
 
-    private BookingMapper() {}
+    private BookingMapper() {
+
+    }
 
     /**
      * Преобразует модель Booking в DTO BookingDto.
