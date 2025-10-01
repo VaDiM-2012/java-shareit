@@ -13,6 +13,7 @@ public final class BookingMapper {
 
     /**
      * Преобразует модель Booking в DTO BookingDto.
+     *
      * @param booking Модель бронирования.
      * @return DTO бронирования.
      */
@@ -23,6 +24,7 @@ public final class BookingMapper {
 
     /**
      * Преобразует DTO BookingDto в модель Booking.
+     *
      * @param dto DTO бронирования.
      * @return Модель бронирования.
      */

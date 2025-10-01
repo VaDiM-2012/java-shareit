@@ -17,7 +17,6 @@ public final class ItemRequestMapper {
      * @return DTO запроса (заглушка).
      */
     public static ItemRequestDto toItemRequestDto(ItemRequest itemRequest) {
-        // Заглушка. Реализация будет добавлена в спринте add-item-requests.
         return null;
     }
 
@@ -27,7 +26,6 @@ public final class ItemRequestMapper {
      * @return Модель запроса (заглушка).
      */
     public static ItemRequest toItemRequest(ItemRequestDto dto) {
-        // Заглушка. Реализация будет добавлена в спринте add-item-requests.
         return null;
     }
 }
