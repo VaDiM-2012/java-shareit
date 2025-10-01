@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * Сервис для управления сущностью ItemRequest.
- * Заглушка. Полная реализация будет добавлена в спринте add-item-requests.
  */
 @Service
 @RequiredArgsConstructor
@@ -22,12 +21,12 @@ public class ItemRequestService {
      *
      * @param userId ID пользователя, создающего запрос (requestor).
      * @param dto DTO с данными запроса.
-     * @return DTO созданного запроса (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @return DTO созданного запроса.
+     * @throws UnsupportedOperationException .
      */
     public ItemRequestDto createRequest(Long userId, ItemRequestDto dto) {
         log.info("Получен запрос на создание ItemRequest от пользователя {} с данными: {}", userId, dto);
-        throw new UnsupportedOperationException("Метод будет реализован в спринте add-item-requests");
+        throw new UnsupportedOperationException("");
     }
 
     /**
@@ -35,25 +34,24 @@ public class ItemRequestService {
      *
      * @param requestId ID запроса.
      * @param userId ID пользователя (для проверки доступа).
-     * @return DTO найденного запроса (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @return DTO найденного запроса.
+     * @throws UnsupportedOperationException .
      */
     public ItemRequestDto getRequestById(Long requestId, Long userId) {
         log.info("Получен запрос на получение ItemRequest {} пользователем {}", requestId, userId);
-        throw new UnsupportedOperationException("Метод будет реализован в спринте add-item-requests");
+        throw new UnsupportedOperationException("");
     }
 
     /**
      * Возвращает список всех запросов, созданных конкретным пользователем.
      *
      * @param userId ID пользователя-запросчика.
-     * @return Список DTO запросов (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @return Список DTO запросов.
+     * @throws UnsupportedOperationException .
      */
     public List<ItemRequestDto> getAllRequestsByUser(Long userId) {
         log.info("Получен запрос на получение списка ItemRequest для пользователя {}", userId);
         return Collections.emptyList();
-        // throw new UnsupportedOperationException("Метод будет реализован в спринте add-item-requests");
     }
 
     /**
@@ -62,12 +60,11 @@ public class ItemRequestService {
      * @param userId ID пользователя, запрашивающего список.
      * @param from Начальный индекс.
      * @param size Количество элементов.
-     * @return Список DTO запросов (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @return Список DTO запросов.
+     * @throws UnsupportedOperationException .
      */
     public List<ItemRequestDto> getAllRequests(Long userId, Integer from, Integer size) {
         log.info("Получен запрос на получение всех ItemRequest (from={}, size={}) пользователем {}", from, size, userId);
         return Collections.emptyList();
-        // throw new UnsupportedOperationException("Метод будет реализован в спринте add-item-requests");
     }
 }

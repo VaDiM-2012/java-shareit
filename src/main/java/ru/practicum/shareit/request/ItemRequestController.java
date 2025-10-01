@@ -18,7 +18,6 @@ import java.util.List;
 
 /**
  * REST-контроллер для обработки запросов, связанных с сущностью ItemRequest.
- * Заглушка. Полная реализация будет добавлена в спринте add-item-requests.
  */
 @RestController
 @RequestMapping("/requests")
@@ -34,7 +33,7 @@ public class ItemRequestController {
      * @param userId ID пользователя, создающего запрос.
      * @param dto DTO с данными запроса.
      * @return DTO созданного запроса.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @throws UnsupportedOperationException .
      */
     @PostMapping
     public ItemRequestDto createRequest(
@@ -50,7 +49,7 @@ public class ItemRequestController {
      * @param requestId ID запроса.
      * @param userId ID пользователя, запрашивающего данные.
      * @return DTO найденного запроса.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @throws UnsupportedOperationException .
      */
     @GetMapping("/{requestId}")
     public ItemRequestDto getRequestById(
@@ -67,7 +66,7 @@ public class ItemRequestController {
      * @param from Начальный индекс.
      * @param size Количество элементов.
      * @return Список DTO запросов.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @throws UnsupportedOperationException .
      */
     @GetMapping("/all")
     public List<ItemRequestDto> getAllRequests(
@@ -83,7 +82,7 @@ public class ItemRequestController {
      *
      * @param userId ID пользователя-запросчика.
      * @return Список DTO запросов.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-item-requests.
+     * @throws UnsupportedOperationException .
      */
     @GetMapping
     public List<ItemRequestDto> getAllRequestsByUser(

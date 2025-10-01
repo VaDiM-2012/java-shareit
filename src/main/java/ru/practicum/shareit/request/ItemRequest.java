@@ -4,9 +4,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-/**
- * Заглушка модели ItemRequest, необходимая для компиляции Item.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

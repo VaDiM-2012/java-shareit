@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * Сервис для управления сущностью Booking.
- * Заглушка. Полная реализация будет добавлена в спринте add-bookings.
  */
 @Service
 @RequiredArgsConstructor
@@ -22,12 +21,12 @@ public class BookingService {
      *
      * @param userId ID пользователя, создающего бронирование (booker).
      * @param dto DTO с данными бронирования.
-     * @return DTO созданного бронирования (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @return DTO созданного бронирования.
+     * @throws UnsupportedOperationException .
      */
     public BookingDto createBooking(Long userId, BookingDto dto) {
         log.info("Получен запрос на создание бронирования от пользователя {} с данными: {}", userId, dto);
-        throw new UnsupportedOperationException("Метод будет реализован в спринте add-bookings");
+        throw new UnsupportedOperationException("");
     }
 
     /**
@@ -36,12 +35,12 @@ public class BookingService {
      * @param bookingId ID бронирования.
      * @param userId ID пользователя-владельца вещи.
      * @param approved Статус: true - подтвердить, false - отклонить.
-     * @return DTO обновленного бронирования (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @return DTO обновленного бронирования.
+     * @throws UnsupportedOperationException .
      */
     public BookingDto updateBookingStatus(Long bookingId, Long userId, Boolean approved) {
         log.info("Получен запрос на обновление статуса бронирования {} пользователем {} со статусом approved={}", bookingId, userId, approved);
-        throw new UnsupportedOperationException("Метод будет реализован в спринте add-bookings");
+        throw new UnsupportedOperationException("");
     }
 
     /**
@@ -49,12 +48,12 @@ public class BookingService {
      *
      * @param bookingId ID бронирования.
      * @param userId ID пользователя, запрашивающего информацию (должен быть booker или owner).
-     * @return DTO найденного бронирования (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @return DTO найденного бронирования.
+     * @throws UnsupportedOperationException .
      */
     public BookingDto getBookingById(Long bookingId, Long userId) {
         log.info("Получен запрос на получение бронирования {} пользователем {}", bookingId, userId);
-        throw new UnsupportedOperationException("Метод будет реализован в спринте add-bookings");
+        throw new UnsupportedOperationException("");
     }
 
     /**
@@ -62,14 +61,14 @@ public class BookingService {
      *
      * @param userId ID арендатора (booker).
      * @param state Строка состояния (e.g., ALL, CURRENT, PAST).
-     * @return Список DTO бронирований (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @return Список DTO бронирований.
+     * @throws UnsupportedOperationException .
      */
     public List<BookingDto> getAllBookingsByUser(Long userId, String state) {
         log.info("Получен запрос на получение списка бронирований для арендатора {} со статусом {}", userId, state);
         // Возвращаем пустой список вместо исключения, так как это GET-запрос списка
         return Collections.emptyList();
-        // throw new UnsupportedOperationException("Метод будет реализован в спринте add-bookings");
+
     }
 
     /**
@@ -77,13 +76,12 @@ public class BookingService {
      *
      * @param userId ID владельца (owner).
      * @param state Строка состояния (e.g., ALL, CURRENT, PAST).
-     * @return Список DTO бронирований (заглушка).
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @return Список DTO бронирований.
+     * @throws UnsupportedOperationException .
      */
     public List<BookingDto> getAllBookingsByOwner(Long userId, String state) {
         log.info("Получен запрос на получение списка бронирований для владельца {} со статусом {}", userId, state);
         // Возвращаем пустой список вместо исключения, так как это GET-запрос списка
         return Collections.emptyList();
-        // throw new UnsupportedOperationException("Метод будет реализован в спринте add-bookings");
     }
 }

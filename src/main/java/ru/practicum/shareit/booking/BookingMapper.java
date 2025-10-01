@@ -5,7 +5,6 @@ import ru.practicum.shareit.booking.model.Booking;
 
 /**
  * Маппер для преобразования между моделью Booking и DTO BookingDto.
- * Заглушка. Реализация будет добавлена в спринте add-bookings.
  */
 public final class BookingMapper {
 

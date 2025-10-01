@@ -19,7 +19,6 @@ import java.util.List;
 
 /**
  * REST-контроллер для обработки запросов, связанных с сущностью Booking.
- * Заглушка. Полная реализация будет добавлена в спринте add-bookings.
  */
 @RestController
 @RequestMapping("/bookings")
@@ -35,7 +34,7 @@ public class BookingController {
      * @param userId ID пользователя, создающего бронирование.
      * @param dto DTO с данными бронирования.
      * @return DTO созданного бронирования.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @throws UnsupportedOperationException .
      */
     @PostMapping
     public BookingDto createBooking(
@@ -52,7 +51,7 @@ public class BookingController {
      * @param userId ID пользователя-владельца.
      * @param approved Статус: true - подтвердить, false - отклонить.
      * @return DTO обновленного бронирования.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @throws UnsupportedOperationException .
      */
     @PatchMapping("/{bookingId}")
     public BookingDto updateBookingStatus(
@@ -69,7 +68,7 @@ public class BookingController {
      * @param bookingId ID бронирования.
      * @param userId ID пользователя, запрашивающего данные.
      * @return DTO найденного бронирования.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @throws UnsupportedOperationException .
      */
     @GetMapping("/{bookingId}")
     public BookingDto getBookingById(
@@ -85,7 +84,7 @@ public class BookingController {
      * @param userId ID пользователя (арендатора).
      * @param state Строка состояния (ALL, CURRENT, PAST, FUTURE, WAITING, REJECTED).
      * @return Список DTO бронирований.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @throws UnsupportedOperationException .
      */
     @GetMapping
     public List<BookingDto> getAllBookingsByUser(
@@ -101,7 +100,7 @@ public class BookingController {
      * @param userId ID пользователя (владельца).
      * @param state Строка состояния.
      * @return Список DTO бронирований.
-     * @throws UnsupportedOperationException Метод будет реализован в спринте add-bookings.
+     * @throws UnsupportedOperationException .
      */
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsByOwner(
