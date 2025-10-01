@@ -17,11 +17,6 @@ import java.util.List;
 @Slf4j
 public class BookingService {
 
-    // Зависимости для будущей реализации
-    // private final BookingRepository bookingRepository;
-    // private final UserService userService;
-    // private final ItemService itemService;
-
     /**
      * Создает новое бронирование.
      *

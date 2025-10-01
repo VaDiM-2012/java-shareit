@@ -17,10 +17,6 @@ import java.util.List;
 @Slf4j
 public class ItemRequestService {
 
-
-    // private final ItemRequestRepository itemRequestRepository;
-    // private final UserService userService;
-
     /**
      * Создает новый запрос на вещь.
      *

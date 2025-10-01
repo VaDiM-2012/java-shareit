@@ -2,6 +2,7 @@ package ru.practicum.shareit.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exception.InvalidUserEmailException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 
@@ -71,7 +72,7 @@ public class InMemoryUserRepository {
     public void deleteById(Long id) {
         log.info("Попытка удаления пользователя с ID: {}", id);
         if (!users.containsKey(id)) {
-            throw new ValidationException("Пользователь с ID " + id + " не найден.");
+            throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
         users.remove(id);
         log.info("Пользователь с ID {} успешно удалён", id);
@@ -86,14 +87,14 @@ public class InMemoryUserRepository {
     private void validateEmail(User user) {
         String email = user.getEmail();
         if (email == null || email.isBlank()) {
-            throw new ValidationException("Email не может быть пустым.");
+            throw new InvalidUserEmailException("Email не может быть пустым.");
         }
 
         boolean emailExists = users.values().stream()
                 .anyMatch(u -> u.getEmail().equals(email) && !Objects.equals(u.getId(), user.getId()));
 
         if (emailExists) {
-            throw new ValidationException("Нарушение уникальности: email уже существует");
+            throw new InvalidUserEmailException("Нарушение уникальности: email " + email + " уже существует");
         }
     }
 }

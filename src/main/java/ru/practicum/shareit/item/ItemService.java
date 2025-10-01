@@ -1,14 +1,16 @@
+// 3. Обновлённый ItemService (с новым исключением и устранением дублирования)
+
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.exception.OwnerMismatchException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.Collections;
@@ -40,10 +42,10 @@ public class ItemService {
 
         // 1. Проверка существования владельца (User)
         UserDto ownerDto = userService.findById(userId);
-        User owner = new User(ownerDto.getId(), ownerDto.getName(), ownerDto.getEmail()); // Преобразование DTO в модель User
+        User owner = new User(ownerDto.getId(), ownerDto.getName(), ownerDto.getEmail());
 
         // 2. Преобразование и сохранение
-        Item item = ItemMapper.toItem(itemDto, owner, null); // ItemRequest пока не поддерживается, передаем null
+        Item item = ItemMapper.toItem(itemDto, owner, null);
         Item savedItem = itemRepository.save(item);
 
         ItemDto result = ItemMapper.toItemDto(savedItem);
@@ -59,7 +61,7 @@ public class ItemService {
      * @param userId ID пользователя, который пытается обновить вещь (должен быть владельцем).
      * @return DTO обновленной вещи.
      * @throws NotFoundException Если вещь не найдена.
-     * @throws ValidationException Если пользователь не является владельцем вещи.
+     * @throws OwnerMismatchException Если пользователь не является владельцем вещи.
      */
     public ItemDto updateItem(Long itemId, ItemDto itemDto, Long userId) {
         log.info("Начало обновления вещи. ID вещи={}, ID пользователя={}, данные обновления={}", itemId, userId, itemDto);
@@ -68,10 +70,7 @@ public class ItemService {
                 .orElseThrow(() -> new NotFoundException("Вещь с ID=" + itemId + " не найдена."));
 
         // 1. Проверка, что пользователь является владельцем
-        if (!existingItem.getOwner().getId().equals(userId)) {
-            log.error("Попытка обновления вещи не владельцем. Владелец ID={}, Запрашивающий пользователь ID={}", existingItem.getOwner().getId(), userId);
-            throw new NotFoundException("Пользователь с ID=" + userId + " не является владельцем вещи ID=" + itemId);
-        }
+        validateOwner(userId, existingItem);
 
         // 2. Обновление только не-null полей (PATCH-логика)
         if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
@@ -90,6 +89,20 @@ public class ItemService {
         ItemDto result = ItemMapper.toItemDto(updatedItem);
         log.info("Завершение обновления вещи. Результат: {}", result);
         return result;
+    }
+
+    /**
+     * Проверяет, является ли пользователь владельцем вещи.
+     *
+     * @param userId ID пользователя.
+     * @param item Вещь для проверки.
+     * @throws OwnerMismatchException Если пользователь не является владельцем.
+     */
+    private void validateOwner(Long userId, Item item) {
+        if (!item.getOwner().getId().equals(userId)) {
+            log.error("Попытка обновления вещи не владельцем. Владелец ID={}, Запрашивающий пользователь ID={}", item.getOwner().getId(), userId);
+            throw new OwnerMismatchException("Пользователь с ID=" + userId + " не является владельцем вещи ID=" + item.getId());
+        }
     }
 
     /**
@@ -119,8 +132,6 @@ public class ItemService {
     public List<ItemDto> getItemsByOwner(Long userId) {
         log.info("Начало получения списка вещей владельца. ID владельца={}", userId);
 
-        // В рамках текущей задачи, достаточно проверить, что пользователь существует
-        // (даже если он не владеет вещами, список будет пустым, но 404 не будет)
         userService.findById(userId); // Проверка существования пользователя
 
         List<ItemDto> result = itemRepository.findByOwner(userId).stream()

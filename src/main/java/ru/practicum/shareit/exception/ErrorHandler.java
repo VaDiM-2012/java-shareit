@@ -1,5 +1,6 @@
 package ru.practicum.shareit.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -14,7 +15,12 @@ import java.util.Objects;
  * Перехватывает бизнес-исключения (404, 409) и ошибки валидации Spring (400).
  */
 @RestControllerAdvice
+@Slf4j
 public class ErrorHandler {
+
+    private ErrorResponse createErrorResponse(String error, Throwable e) {
+        return new ErrorResponse(error, e.getMessage());
+    }
 
     /**
      * Обрабатывает исключения типа NotFoundException (404 Not Found).
@@ -25,7 +31,8 @@ public class ErrorHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND) // 404
     public ErrorResponse handleNotFoundException(final NotFoundException e) {
-        return new ErrorResponse("Объект не найден", e.getMessage());
+        log.error(e.getMessage(), e);
+        return createErrorResponse("Объект не найден", e);
     }
 
     /**
@@ -38,7 +45,34 @@ public class ErrorHandler {
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.CONFLICT) // 409
     public ErrorResponse handleValidationException(final ValidationException e) {
-        return new ErrorResponse("Нарушение бизнес-правил", e.getMessage());
+        log.error(e.getMessage(), e);
+        return createErrorResponse("Нарушение бизнес-правил", e);
+    }
+
+    /**
+     * Обрабатывает исключения типа DuplicateEmailException (409 Conflict).
+     *
+     * @param e Перехваченное исключение.
+     * @return Структурированный JSON-ответ с ошибкой 409.
+     */
+    @ExceptionHandler(InvalidUserEmailException.class)
+    @ResponseStatus(HttpStatus.CONFLICT) // 409
+    public ErrorResponse handleDuplicateEmailException(final InvalidUserEmailException e) {
+        log.error(e.getMessage(), e);
+        return createErrorResponse("Конфликт уникальности", e);
+    }
+
+    /**
+     * Обрабатывает исключения типа OwnerMismatchException (409 Conflict).
+     *
+     * @param e Перехваченное исключение.
+     * @return Структурированный JSON-ответ с ошибкой 409.
+     */
+    @ExceptionHandler(OwnerMismatchException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN) // 403
+    public ErrorResponse handleOwnerMismatchException(final OwnerMismatchException e) {
+        log.error(e.getMessage(), e);
+        return createErrorResponse("Нарушение доступа", e);
     }
 
     // --- Обработчики HTTP 400 Bad Request ---
@@ -54,6 +88,7 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
     public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
+        log.error(e.getMessage(), e);
         String defaultMessage = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
         return new ErrorResponse("Ошибка валидации DTO", defaultMessage);
     }
@@ -67,6 +102,7 @@ public class ErrorHandler {
     @ExceptionHandler(MissingRequestHeaderException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
     public ErrorResponse handleMissingRequestHeaderException(final MissingRequestHeaderException e) {
+        log.error(e.getMessage(), e);
         return new ErrorResponse("Отсутствует обязательный заголовок", "Заголовок " + e.getHeaderName() + " обязателен.");
     }
 
@@ -79,6 +115,7 @@ public class ErrorHandler {
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) // 500
     public ErrorResponse handleThrowable(final Throwable e) {
-        return new ErrorResponse("Непредвиденная ошибка сервера", e.getMessage());
+        log.error(e.getMessage(), e);
+        return createErrorResponse("Непредвиденная ошибка сервера", e);
     }
 }
