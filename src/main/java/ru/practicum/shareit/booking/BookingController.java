@@ -1,112 +1,64 @@
 package ru.practicum.shareit.booking;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.booking.dto.BookingDto;
-
-
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.booking.dto.BookingCreateDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import java.util.List;
 
 /**
- * REST-контроллер для обработки запросов, связанных с сущностью Booking.
+ * Контроллер для управления бронированиями.
  */
+@Slf4j
 @RestController
 @RequestMapping("/bookings")
 @RequiredArgsConstructor
-@Slf4j
 public class BookingController {
 
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final BookingService bookingService;
 
-    /**
-     * POST /bookings - Создание нового бронирования.
-     *
-     * @param userId ID пользователя, создающего бронирование.
-     * @param dto DTO с данными бронирования.
-     * @return DTO созданного бронирования.
-     * @throws UnsupportedOperationException .
-     */
     @PostMapping
-    public BookingDto createBooking(
-            @RequestHeader("X-Sharer-User-Id") Long userId,
-            @Valid @RequestBody BookingDto dto) {
-        log.info("Endpoint POST /bookings: Request to create booking by user {}", userId);
-        return bookingService.createBooking(userId, dto);
+    public BookingResponseDto create(@RequestHeader(USER_ID_HEADER) Long bookerId,
+                                     @Valid @RequestBody BookingCreateDto dto) {
+        log.info("POST /bookings (Booker: {}): Создание бронирования", bookerId);
+        return bookingService.create(bookerId, dto);
     }
 
-    /**
-     * PATCH /bookings/{bookingId} - Подтверждение или отклонение запроса на бронирование.
-     *
-     * @param bookingId ID бронирования.
-     * @param userId ID пользователя-владельца.
-     * @param approved Статус: true - подтвердить, false - отклонить.
-     * @return DTO обновленного бронирования.
-     * @throws UnsupportedOperationException .
-     */
     @PatchMapping("/{bookingId}")
-    public BookingDto updateBookingStatus(
-            @PathVariable Long bookingId,
-            @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam Boolean approved) {
-        log.info("Endpoint PATCH /bookings/{}: Request to update status to {} by owner {}", bookingId, approved, userId);
-        return bookingService.updateBookingStatus(bookingId, userId, approved);
+    public BookingResponseDto approveOrReject(@RequestHeader(USER_ID_HEADER) Long ownerId,
+                                              @PathVariable Long bookingId,
+                                              @RequestParam Boolean approved) {
+        log.info("PATCH /bookings/{} (Owner: {}): Установка статуса approved={}", bookingId, ownerId, approved);
+        return bookingService.approveOrReject(ownerId, bookingId, approved);
     }
 
-    /**
-     * GET /bookings/{bookingId} - Получение данных о конкретном бронировании.
-     *
-     * @param bookingId ID бронирования.
-     * @param userId ID пользователя, запрашивающего данные.
-     * @return DTO найденного бронирования.
-     * @throws UnsupportedOperationException .
-     */
     @GetMapping("/{bookingId}")
-    public BookingDto getBookingById(
-            @PathVariable Long bookingId,
-            @RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Endpoint GET /bookings/{}: Request to get booking by user {}", bookingId, userId);
-        return bookingService.getBookingById(bookingId, userId);
+    public BookingResponseDto getById(@RequestHeader(USER_ID_HEADER) Long userId,
+                                      @PathVariable Long bookingId) {
+        log.info("GET /bookings/{} (User: {}): Получение бронирования", bookingId, userId);
+        return bookingService.getById(userId, bookingId);
     }
 
-    /**
-     * GET /bookings - Получение списка бронирований текущего пользователя (арендатора).
-     *
-     * @param userId ID пользователя (арендатора).
-     * @param state Строка состояния (ALL, CURRENT, PAST, FUTURE, WAITING, REJECTED).
-     * @return Список DTO бронирований.
-     * @throws UnsupportedOperationException .
-     */
     @GetMapping
-    public List<BookingDto> getAllBookingsByUser(
-            @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(defaultValue = "ALL") String state) {
-        log.info("Endpoint GET /bookings: Request to get all bookings for booker {} with state {}", userId, state);
-        return bookingService.getAllBookingsByUser(userId, state);
+    public List<BookingResponseDto> getAllByBooker(@RequestHeader(USER_ID_HEADER) Long bookerId,
+                                                   @RequestParam(defaultValue = "ALL") String state,
+                                                   @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                                   @Positive @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /bookings (Booker: {}): Получение бронирований со статусом {}", bookerId, state);
+        return bookingService.getAllByBooker(bookerId, state, from, size);
     }
 
-    /**
-     * GET /bookings/owner - Получение списка бронирований для вещей текущего пользователя (владельца).
-     *
-     * @param userId ID пользователя (владельца).
-     * @param state Строка состояния.
-     * @return Список DTO бронирований.
-     * @throws UnsupportedOperationException .
-     */
     @GetMapping("/owner")
-    public List<BookingDto> getAllBookingsByOwner(
-            @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(defaultValue = "ALL") String state) {
-        log.info("Endpoint GET /bookings/owner: Request to get all bookings for owner {} with state {}", userId, state);
-        return bookingService.getAllBookingsByOwner(userId, state);
+    public List<BookingResponseDto> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long ownerId,
+                                                  @RequestParam(defaultValue = "ALL") String state,
+                                                  @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                                  @Positive @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /bookings/owner (Owner: {}): Получение бронирований для его вещей со статусом {}", ownerId, state);
+        return bookingService.getAllByOwner(ownerId, state, from, size);
     }
 }

@@ -1,38 +1,52 @@
 package ru.practicum.shareit.booking.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
+
 
 import java.time.LocalDateTime;
 
 /**
- * Модель сущности Бронирование (Booking).
- * Содержит информацию о периоде аренды, вещи, арендаторе и статусе.
+ * Модель данных Бронирование (Booking).
  */
 @Getter
-@Setter // Setter нужен для поля status, которое меняется
-@NoArgsConstructor(force = true)
+@Setter
+@Entity
+@Table(name = "bookings")
+@NoArgsConstructor
 @AllArgsConstructor
 public class Booking {
+
     /** Уникальный идентификатор бронирования. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Дата и время начала аренды. Неизменяемое поле. */
-    private final LocalDateTime start;
+    /** Дата и время начала бронирования. */
+    @Column(name = "start_date", nullable = false)
+    private LocalDateTime start;
 
-    /** Дата и время окончания аренды. Неизменяемое поле. */
-    private final LocalDateTime end;
+    /** Дата и время окончания бронирования. */
+    @Column(name = "end_date", nullable = false)
+    private LocalDateTime end;
 
-    /** Вещь, которую бронируют. Неизменяемое поле. */
-    private final Item item;
+    /** Вещь, которую бронируют. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
-    /** Пользователь, который бронирует вещь. Неизменяемое поле. */
-    private final User booker;
+    /** Пользователь, который осуществляет бронирование. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booker_id", nullable = false)
+    private User booker;
 
-    /** Текущий статус бронирования (может меняться). */
+    /** Статус бронирования. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private BookingStatus status;
 }
