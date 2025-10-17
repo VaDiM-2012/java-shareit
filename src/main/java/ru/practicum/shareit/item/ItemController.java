@@ -5,11 +5,14 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.CommentCreateDto;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
+import ru.practicum.shareit.validation.CreateGroup;
+
 import java.util.List;
 
 /**
@@ -26,7 +29,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto create(@RequestHeader(USER_ID_HEADER) Long ownerId,
-                          @Valid @RequestBody ItemDto itemDto) {
+                          @Validated(CreateGroup.class) @RequestBody ItemDto itemDto) {
         log.info("POST /items (Owner: {}): Создание вещи", ownerId);
         return itemService.create(ownerId, itemDto);
     }
@@ -34,7 +37,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader(USER_ID_HEADER) Long ownerId,
                           @PathVariable Long itemId,
-                          @RequestBody ItemDto itemDto) {
+                          @Validated @RequestBody ItemDto itemDto) {
         log.info("PATCH /items/{} (Owner: {}): Обновление вещи", itemId, ownerId);
         return itemService.update(ownerId, itemId, itemDto);
     }

@@ -13,8 +13,8 @@ import ru.practicum.shareit.comment.dto.CommentCreateDto;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.comment.repository.CommentRepository;
+import ru.practicum.shareit.exception.BookingNotFoundException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Имплементация сервиса для работы с сущностями {@link Item} и {@link Comment}.
+ * Реализация сервиса для работы с сущностями {@link Item} и {@link Comment}.
  */
 @Slf4j
 @Service
@@ -160,7 +160,7 @@ public class ItemServiceImpl implements ItemService {
                 itemId, authorId, BookingStatus.APPROVED, now);
 
         if (pastBookings.isEmpty()) {
-            throw new ValidationException("Пользователь " + authorId + " не бронировал вещь " + itemId + " или бронирование не завершено.");
+            throw new BookingNotFoundException("Пользователь " + authorId + " не бронировал вещь " + itemId + " или бронирование не завершено.");
         }
 
         Comment comment = CommentMapper.toEntity(dto);

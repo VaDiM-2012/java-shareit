@@ -106,6 +106,27 @@ public class ErrorHandler {
         return new ErrorResponse("Отсутствует обязательный заголовок", "Заголовок " + e.getHeaderName() + " обязателен.");
     }
 
+    @ExceptionHandler(ItemNotAvailableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public ErrorResponse handleItemNotAvailableException(final ItemNotAvailableException e) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse("Вы не можете взять данную вещь", e.getMessage());
+    }
+
+    @ExceptionHandler(BookingNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public ErrorResponse handleItemNotAvailableException(final BookingNotFoundException e) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse("Вы не оставить комментарий к данной вещи", e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidUserIdException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN) // 403
+    public ErrorResponse handleInvalidUserIdException(final InvalidUserIdException e) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse("Не верный Id пользователя", e.getMessage());
+    }
+
     /**
      * Универсальный обработчик для всех необработанных RuntimeException (HTTP 500).
      *

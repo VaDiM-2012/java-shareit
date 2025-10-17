@@ -10,6 +10,8 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.InvalidUserIdException;
+import ru.practicum.shareit.exception.ItemNotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
@@ -22,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Имплементация сервиса для работы с сущностью {@link Booking}.
+ * Реализация сервиса для работы с сущностью {@link Booking}.
  */
 @Slf4j
 @Service
@@ -38,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingResponseDto create(Long bookerId, BookingCreateDto dto) {
         if (dto.start().isEqual(dto.end()) || dto.start().isAfter(dto.end())) {
-            throw new ValidationException("Дата начала должна быть раньше даты окончания.");
+            throw new ItemNotAvailableException("Дата начала должна быть раньше даты окончания.");
         }
 
         User booker = findUserById(bookerId);
@@ -46,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Вещь с ID " + dto.itemId() + " не найдена."));
 
         if (!item.getAvailable()) {
-            throw new ValidationException("Вещь с ID " + dto.itemId() + " недоступна для бронирования.");
+            throw new ItemNotAvailableException("Вещь с ID " + dto.itemId() + " недоступна для бронирования.");
         }
 
         if (item.getOwner().getId().equals(bookerId)) {
@@ -63,7 +65,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDto approveOrReject(Long ownerId, Long bookingId, Boolean approved) {
-        findUserById(ownerId); // Проверка существования владельца
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new InvalidUserIdException("Пользователь с ID " + ownerId + " не найден.")); // Проверка существования владельца
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID " + bookingId + " не найдено."));
@@ -108,33 +111,17 @@ public class BookingServiceImpl implements BookingService {
         BookingState bookingState = parseState(state);
         PageRequest page = PageRequest.of(from / size, size);
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> bookings;
-
-        switch (bookingState) {
-            case ALL:
-                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId, page);
-                break;
-            case CURRENT:
-                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-                        bookerId, now, now, page);
-                break;
-            case PAST:
-                bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, now, page);
-                break;
-            case FUTURE:
-                bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, now, page);
-                break;
-            case WAITING:
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(
-                        bookerId, BookingStatus.WAITING, page);
-                break;
-            case REJECTED:
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(
-                        bookerId, BookingStatus.REJECTED, page);
-                break;
-            default:
-                throw new ValidationException("Unknown state: " + state); // Должно быть обработано parseState
-        }
+        List<Booking> bookings = switch (bookingState) {
+            case ALL -> bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId, page);
+            case CURRENT -> bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                    bookerId, now, now, page);
+            case PAST -> bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, now, page);
+            case FUTURE -> bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, now, page);
+            case WAITING -> bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(
+                    bookerId, BookingStatus.WAITING, page);
+            case REJECTED -> bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(
+                    bookerId, BookingStatus.REJECTED, page);
+        };
 
         log.info("Получен список бронирований арендатора {} по состоянию {}. Количество: {}", bookerId, state, bookings.size());
         return BookingMapper.toDto(bookings);
@@ -153,28 +140,14 @@ public class BookingServiceImpl implements BookingService {
             return Collections.emptyList();
         }
 
-        switch (bookingState) {
-            case ALL:
-                bookings = bookingRepository.findAllByOwnerId(ownerId, page);
-                break;
-            case CURRENT:
-                bookings = bookingRepository.findAllCurrentByOwnerId(ownerId, now, page);
-                break;
-            case PAST:
-                bookings = bookingRepository.findAllPastByOwnerId(ownerId, now, page);
-                break;
-            case FUTURE:
-                bookings = bookingRepository.findAllFutureByOwnerId(ownerId, now, page);
-                break;
-            case WAITING:
-                bookings = bookingRepository.findAllByOwnerIdAndStatus(ownerId, BookingStatus.WAITING, page);
-                break;
-            case REJECTED:
-                bookings = bookingRepository.findAllByOwnerIdAndStatus(ownerId, BookingStatus.REJECTED, page);
-                break;
-            default:
-                throw new ValidationException("Unknown state: " + state);
-        }
+        bookings = switch (bookingState) {
+            case ALL -> bookingRepository.findAllByOwnerId(ownerId, page);
+            case CURRENT -> bookingRepository.findAllCurrentByOwnerId(ownerId, now, page);
+            case PAST -> bookingRepository.findAllPastByOwnerId(ownerId, now, page);
+            case FUTURE -> bookingRepository.findAllFutureByOwnerId(ownerId, now, page);
+            case WAITING -> bookingRepository.findAllByOwnerIdAndStatus(ownerId, BookingStatus.WAITING, page);
+            case REJECTED -> bookingRepository.findAllByOwnerIdAndStatus(ownerId, BookingStatus.REJECTED, page);
+        };
 
         log.info("Получен список бронирований для вещей владельца {} по состоянию {}. Количество: {}", ownerId, state, bookings.size());
         return BookingMapper.toDto(bookings);
