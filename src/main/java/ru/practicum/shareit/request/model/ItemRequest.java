@@ -1,31 +1,39 @@
 package ru.practicum.shareit.request.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.shareit.user.User;
-
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 
 /**
- * Модель сущности Запрос на вещь (ItemRequest).
- * Содержит описание требуемой вещи и информацию о пользователе-запросчике.
+ * Модель данных Запрос на вещь (ItemRequest).
  */
 @Getter
 @Setter
-@NoArgsConstructor(force = true)
+@Entity
+@Table(name = "requests")
+@NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequest {
+
     /** Уникальный идентификатор запроса. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Описание требуемой вещи. Неизменяемое поле. */
-    private final String description;
+    /** Содержание запроса. */
+    @Column(name = "description", nullable = false)
+    private String description;
 
-    /** Пользователь, который создал запрос. Неизменяемое поле. */
-    private final User requestor;
+    /** Пользователь, создавший запрос. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "requestor_id", nullable = false)
+    private User requestor;
 
-    /** Дата и время создания запроса. Неизменяемое поле. */
-    private final LocalDateTime created;
+    /** Дата и время создания запроса. */
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
 }

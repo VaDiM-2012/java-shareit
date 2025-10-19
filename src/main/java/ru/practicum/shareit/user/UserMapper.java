@@ -1,22 +1,27 @@
 package ru.practicum.shareit.user;
 
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Утилитарный класс для преобразования между моделью User и DTO UserDto.
+ * Маппер для преобразования между сущностью {@link User} и ее DTO.
  */
 public class UserMapper {
 
     private UserMapper() {
-        // Утилитарный класс не должен быть инстанцирован
+        // Утилитарный класс
     }
 
     /**
-     * Преобразует модель User в DTO UserDto.
-     * @param user Модель пользователя.
+     * Преобразует сущность {@link User} в DTO {@link UserDto}.
+     *
+     * @param user Сущность пользователя.
      * @return DTO пользователя.
      */
-    public static UserDto toUserDto(User user) {
+    public static UserDto toDto(User user) {
         return new UserDto(
                 user.getId(),
                 user.getName(),
@@ -25,15 +30,28 @@ public class UserMapper {
     }
 
     /**
-     * Преобразует DTO UserDto в модель User.
-     * @param userDto DTO пользователя.
-     * @return Модель пользователя.
+     * Преобразует коллекцию сущностей {@link User} в коллекцию DTO {@link UserDto}.
+     *
+     * @param users Список сущностей пользователей.
+     * @return Список DTO пользователей.
      */
-    public static User toUser(UserDto userDto) {
+    public static List<UserDto> toDto(List<User> users) {
+        return users.stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Преобразует DTO {@link UserDto} в сущность {@link User}.
+     *
+     * @param dto DTO пользователя.
+     * @return Сущность пользователя.
+     */
+    public static User toEntity(UserDto dto) {
         return new User(
-                userDto.getId(),
-                userDto.getName(),
-                userDto.getEmail()
+                dto.id(),
+                dto.name(),
+                dto.email()
         );
     }
 }
