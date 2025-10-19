@@ -12,144 +12,117 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Репозиторий для работы с сущностью {@link Booking}.
+ * Репозиторий для бронирований.
  */
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+    // Методы для арендатора
+    List<Booking> findAllByBookerIdOrderByStartDesc(
+            Long bookerId,
+            Pageable pageable
+    );
 
-    // --- Методы для АРЕНДАТОРА (Booker) ---
+    List<Booking> findAllByBookerIdAndStatusOrderByStartDesc(
+            Long bookerId,
+            BookingStatus status,
+            Pageable pageable
+    );
 
-    /**
-     * Получает все бронирования арендатора.
-     * @param bookerId ID арендатора.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    List<Booking> findAllByBookerIdOrderByStartDesc(Long bookerId, Pageable pageable);
-
-    /**
-     * Получает бронирования арендатора по статусу.
-     * @param bookerId ID арендатора.
-     * @param status Статус бронирования.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    List<Booking> findAllByBookerIdAndStatusOrderByStartDesc(Long bookerId, BookingStatus status, Pageable pageable);
-
-    /**
-     * Получает текущие бронирования арендатора.
-     * @param bookerId ID арендатора.
-     * @param now Текущее время.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
     List<Booking> findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-            Long bookerId, LocalDateTime now, LocalDateTime end, Pageable pageable);
+            Long bookerId,
+            LocalDateTime currentTime,
+            LocalDateTime currentTimeAgain,
+            Pageable pageable
+    );
 
-    /**
-     * Получает будущие бронирования арендатора.
-     * @param bookerId ID арендатора.
-     * @param now Текущее время.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
     List<Booking> findAllByBookerIdAndStartAfterOrderByStartDesc(
-            Long bookerId, LocalDateTime now, Pageable pageable);
+            Long bookerId,
+            LocalDateTime currentTime,
+            Pageable pageable
+    );
 
-    /**
-     * Получает завершенные бронирования арендатора.
-     * @param bookerId ID арендатора.
-     * @param now Текущее время.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
     List<Booking> findAllByBookerIdAndEndBeforeOrderByStartDesc(
-            Long bookerId, LocalDateTime now, Pageable pageable);
+            Long bookerId,
+            LocalDateTime currentTime,
+            Pageable pageable
+    );
 
+    // Методы для владельца
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :ownerId " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByOwnerId(
+            @Param("ownerId") Long ownerId,
+            Pageable pageable
+    );
 
-    // --- Методы для ВЛАДЕЛЬЦА (Owner) ---
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :ownerId " +
+            "AND b.status = :status " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllByOwnerIdAndStatus(
+            @Param("ownerId") Long ownerId,
+            @Param("status") BookingStatus status,
+            Pageable pageable
+    );
 
-    /**
-     * Получает все бронирования для вещей владельца.
-     * @param ownerId ID владельца.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    @Query("SELECT b FROM Booking b JOIN b.item i WHERE i.owner.id = :ownerId ORDER BY b.start DESC")
-    List<Booking> findAllByOwnerId(@Param("ownerId") Long ownerId, Pageable pageable);
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :ownerId " +
+            "AND b.start < :currentTime " +
+            "AND b.end > :currentTime " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllCurrentByOwnerId(
+            @Param("ownerId") Long ownerId,
+            @Param("currentTime") LocalDateTime currentTime,
+            Pageable pageable
+    );
 
-    /**
-     * Получает бронирования вещей владельца по статусу.
-     * @param ownerId ID владельца.
-     * @param status Статус бронирования.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    @Query("SELECT b FROM Booking b JOIN b.item i WHERE i.owner.id = :ownerId AND b.status = :status ORDER BY b.start DESC")
-    List<Booking> findAllByOwnerIdAndStatus(@Param("ownerId") Long ownerId, @Param("status") BookingStatus status, Pageable pageable);
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :ownerId " +
+            "AND b.start > :currentTime " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllFutureByOwnerId(
+            @Param("ownerId") Long ownerId,
+            @Param("currentTime") LocalDateTime currentTime,
+            Pageable pageable
+    );
 
-    /**
-     * Получает текущие бронирования вещей владельца.
-     * @param ownerId ID владельца.
-     * @param now Текущее время.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    @Query("SELECT b FROM Booking b JOIN b.item i WHERE i.owner.id = :ownerId AND b.start < :now AND b.end > :now ORDER BY b.start DESC")
-    List<Booking> findAllCurrentByOwnerId(@Param("ownerId") Long ownerId, @Param("now") LocalDateTime now, Pageable pageable);
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "JOIN b.item i " +
+            "WHERE i.owner.id = :ownerId " +
+            "AND b.end < :currentTime " +
+            "ORDER BY b.start DESC")
+    List<Booking> findAllPastByOwnerId(
+            @Param("ownerId") Long ownerId,
+            @Param("currentTime") LocalDateTime currentTime,
+            Pageable pageable
+    );
 
-    /**
-     * Получает будущие бронирования вещей владельца.
-     * @param ownerId ID владельца.
-     * @param now Текущее время.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    @Query("SELECT b FROM Booking b JOIN b.item i WHERE i.owner.id = :ownerId AND b.start > :now ORDER BY b.start DESC")
-    List<Booking> findAllFutureByOwnerId(@Param("ownerId") Long ownerId, @Param("now") LocalDateTime now, Pageable pageable);
-
-    /**
-     * Получает завершенные бронирования вещей владельца.
-     * @param ownerId ID владельца.
-     * @param now Текущее время.
-     * @param pageable Параметры пагинации.
-     * @return Список бронирований.
-     */
-    @Query("SELECT b FROM Booking b JOIN b.item i WHERE i.owner.id = :ownerId AND b.end < :now ORDER BY b.start DESC")
-    List<Booking> findAllPastByOwnerId(@Param("ownerId") Long ownerId, @Param("now") LocalDateTime now, Pageable pageable);
-
-
-    // --- Дополнительные методы для ItemService (Last/Next Booking) и CommentService (Past Booking Check) ---
-
-    /**
-     * Находит ближайшее завершенное бронирование для указанной вещи (last booking).
-     * @param itemId ID вещи.
-     * @param now Текущее время.
-     * @param status Статус (APPROVED).
-     * @return Optional с бронированием.
-     */
+    // Дополнительные методы
     Optional<Booking> findFirstByItemIdAndStatusAndStartBeforeOrderByEndDesc(
-            Long itemId, BookingStatus status, LocalDateTime now);
+            Long itemId,
+            BookingStatus status,
+            LocalDateTime currentTime
+    );
 
-    /**
-     * Находит ближайшее предстоящее бронирование для указанной вещи (next booking).
-     * @param itemId ID вещи.
-     * @param now Текущее время.
-     * @param status Статус (APPROVED).
-     * @return Optional с бронированием.
-     */
     Optional<Booking> findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(
-            Long itemId, BookingStatus status, LocalDateTime now);
+            Long itemId,
+            BookingStatus status,
+            LocalDateTime currentTime
+    );
 
-    /**
-     * Проверяет, существовало ли завершенное и подтвержденное бронирование вещи пользователем.
-     * Используется для проверки права на добавление комментария.
-     *
-     * @param itemId ID вещи.
-     * @param bookerId ID пользователя-арендатора.
-     * @param now Текущее время.
-     * @param status Статус (APPROVED).
-     * @return Список бронирований (должен быть > 0).
-     */
     List<Booking> findAllByItemIdAndBookerIdAndStatusAndEndBefore(
-            Long itemId, Long bookerId, BookingStatus status, LocalDateTime now);
+            Long itemId,
+            Long bookerId,
+            BookingStatus status,
+            LocalDateTime currentTime
+    );
 }

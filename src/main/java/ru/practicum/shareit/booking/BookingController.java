@@ -8,20 +8,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+
 import java.util.List;
 
 /**
- * Контроллер для управления бронированиями.
+ * Контроллер для бронирований.
  */
 @Slf4j
 @RestController
 @RequestMapping("/bookings")
 @RequiredArgsConstructor
 public class BookingController {
-
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private final BookingService bookingService;
 
+    /**
+     * Создает бронирование.
+     * @param bookerId ID арендатора.
+     * @param dto Данные для создания.
+     * @return Созданное бронирование.
+     */
     @PostMapping
     public BookingResponseDto create(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                      @Valid @RequestBody BookingCreateDto dto) {
@@ -29,6 +35,13 @@ public class BookingController {
         return bookingService.create(bookerId, dto);
     }
 
+    /**
+     * Одобряет или отклоняет бронирование.
+     * @param ownerId ID владельца.
+     * @param bookingId ID бронирования.
+     * @param approved Флаг одобрения.
+     * @return Обновленное бронирование.
+     */
     @PatchMapping("/{bookingId}")
     public BookingResponseDto approveOrReject(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                               @PathVariable Long bookingId,
@@ -37,6 +50,12 @@ public class BookingController {
         return bookingService.approveOrReject(ownerId, bookingId, approved);
     }
 
+    /**
+     * Получает бронирование по ID.
+     * @param userId ID пользователя.
+     * @param bookingId ID бронирования.
+     * @return Бронирование.
+     */
     @GetMapping("/{bookingId}")
     public BookingResponseDto getById(@RequestHeader(USER_ID_HEADER) Long userId,
                                       @PathVariable Long bookingId) {
@@ -44,6 +63,14 @@ public class BookingController {
         return bookingService.getById(userId, bookingId);
     }
 
+    /**
+     * Получает бронирования арендатора.
+     * @param bookerId ID арендатора.
+     * @param state Состояние.
+     * @param from Начало пагинации.
+     * @param size Размер страницы.
+     * @return Список бронирований.
+     */
     @GetMapping
     public List<BookingResponseDto> getAllByBooker(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                                    @RequestParam(defaultValue = "ALL") String state,
@@ -53,6 +80,14 @@ public class BookingController {
         return bookingService.getAllByBooker(bookerId, state, from, size);
     }
 
+    /**
+     * Получает бронирования владельца.
+     * @param ownerId ID владельца.
+     * @param state Состояние.
+     * @param from Начало пагинации.
+     * @param size Размер страницы.
+     * @return Список бронирований.
+     */
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                                   @RequestParam(defaultValue = "ALL") String state,

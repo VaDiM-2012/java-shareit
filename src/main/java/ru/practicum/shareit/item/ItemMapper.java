@@ -87,7 +87,6 @@ public class ItemMapper {
         item.setName(dto.name());
         item.setDescription(dto.description());
         item.setAvailable(dto.available());
-        // Request и Owner устанавливаются в Service
         return item;
     }
 }

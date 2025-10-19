@@ -30,9 +30,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
      * @return Список найденных вещей.
      */
     @Query("SELECT i FROM Item i " +
-           "WHERE i.available = TRUE AND " +
-           "(LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) OR " +
-           "LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%')))")
+            "WHERE i.available = TRUE AND " +
+            "(LOWER(i.name) LIKE LOWER(CONCAT('%', :text, '%')) OR " +
+            "LOWER(i.description) LIKE LOWER(CONCAT('%', :text, '%')))")
     List<Item> search(@Param("text") String text, Pageable pageable);
 
     /**
@@ -42,4 +42,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
      * @return Список вещей.
      */
     List<Item> findAllByRequestId(Long requestId);
+
+    /**
+     * Возвращает список вещей, связанных с указанными запросами.
+     *
+     * @param requestIds Список ID запросов.
+     * @return Список вещей.
+     */
+    List<Item> findAllByRequestIdIn(List<Long> requestIds);
 }

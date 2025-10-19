@@ -6,16 +6,10 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import java.util.List;
 
 /**
- * Интерфейс сервиса для работы с сущностью {@link ru.practicum.shareit.booking.model.Booking}.
+ * Сервис для бронирований.
  */
 public interface BookingService {
-
-    /**
-     * Перечисление возможных состояний (фильтров) бронирования для запросов.
-     */
-    enum BookingState {
-        ALL, CURRENT, PAST, FUTURE, WAITING, REJECTED
-    }
+    enum BookingState { ALL, CURRENT, PAST, FUTURE, WAITING, REJECTED }
 
     BookingResponseDto create(Long bookerId, BookingCreateDto dto);
 

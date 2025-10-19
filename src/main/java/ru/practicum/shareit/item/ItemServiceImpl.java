@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * Реализация сервиса для работы с сущностями {@link Item} и {@link Comment}.
+ * Предоставляет методы для создания, обновления, получения и поиска вещей, а также добавления комментариев.
  */
 @Slf4j
 @Service
@@ -44,6 +45,14 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
     private final ItemRequestRepository requestRepository;
 
+    /**
+     * Создает новую вещь для указанного владельца.
+     *
+     * @param ownerId Идентификатор владельца вещи.
+     * @param itemDto Данные вещи для создания.
+     * @return DTO созданной вещи {@link ItemDto}.
+     * @throws NotFoundException если пользователь или запрос (если указан) не найдены.
+     */
     @Transactional
     @Override
     public ItemDto create(Long ownerId, ItemDto itemDto) {
@@ -51,7 +60,6 @@ public class ItemServiceImpl implements ItemService {
         Item item = ItemMapper.toEntity(itemDto);
         item.setOwner(owner);
 
-        // Установка запроса, если указан request_id
         if (itemDto.requestId() != null) {
             ItemRequest request = requestRepository.findById(itemDto.requestId())
                     .orElseThrow(() -> new NotFoundException("Запрос с ID " + itemDto.requestId() + " не найден."));
@@ -59,150 +67,245 @@ public class ItemServiceImpl implements ItemService {
         }
 
         Item savedItem = itemRepository.save(item);
-        log.info("Пользователь {} создал вещь: {}", ownerId, savedItem.getName());
+        log.info("Пользователь ID {} создал вещь: {}", ownerId, savedItem.getName());
         return ItemMapper.toDto(savedItem);
     }
 
+    /**
+     * Обновляет данные вещи для указанного владельца.
+     *
+     * @param ownerId Идентификатор владельца вещи.
+     * @param itemId  Идентификатор вещи.
+     * @param itemDto Данные для обновления вещи.
+     * @return DTO обновленной вещи {@link ItemDto}.
+     * @throws NotFoundException если пользователь или вещь не найдены, или пользователь не является владельцем.
+     */
     @Transactional
     @Override
     public ItemDto update(Long ownerId, Long itemId, ItemDto itemDto) {
-        findUserById(ownerId); // Проверка существования пользователя
+        findUserById(ownerId);
+        Item item = findItemById(itemId);
 
-        Item existingItem = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + itemId + " не найдена."));
-
-        if (!existingItem.getOwner().getId().equals(ownerId)) {
-            throw new NotFoundException("Пользователь с ID " + ownerId + " не является владельцем вещи.");
+        if (!item.getOwner().getId().equals(ownerId)) {
+            throw new NotFoundException("Пользователь ID " + ownerId + " не является владельцем вещи ID " + itemId);
         }
 
-        if (itemDto.name() != null) {
-            existingItem.setName(itemDto.name());
-        }
-        if (itemDto.description() != null) {
-            existingItem.setDescription(itemDto.description());
-        }
-        if (itemDto.available() != null) {
-            existingItem.setAvailable(itemDto.available());
-        }
-
-        Item updatedItem = itemRepository.save(existingItem);
-        log.info("Пользователь {} обновил вещь: {}", ownerId, updatedItem.getName());
+        updateItemFields(item, itemDto);
+        Item updatedItem = itemRepository.save(item);
+        log.info("Пользователь ID {} обновил вещь: {}", ownerId, updatedItem.getName());
         return ItemMapper.toDto(updatedItem);
     }
 
+    /**
+     * Получает информацию о вещи по её идентификатору.
+     * Для владельца включает данные о последнем и следующем бронировании.
+     *
+     * @param userId Идентификатор пользователя, запрашивающего информацию.
+     * @param itemId Идентификатор вещи.
+     * @return DTO вещи {@link ItemResponseDto} с комментариями и, если пользователь — владелец, данными о бронированиях.
+     * @throws NotFoundException если вещь не найдена.
+     */
     @Override
     public ItemResponseDto getById(Long userId, Long itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + itemId + " не найдена."));
-
-        List<CommentDto> comments = CommentMapper.toDto(commentRepository.findAllByItemId(itemId));
+        Item item = findItemById(itemId);
+        List<CommentDto> comments = getCommentsByItemId(itemId);
 
         if (item.getOwner().getId().equals(userId)) {
-            return getItemResponseDtoWithOwnerBookings(item, comments);
+            return getItemResponseDtoWithBookings(item, comments);
         }
 
-        log.info("Получена вещь с ID {} пользователем {}", itemId, userId);
+        log.info("Получена вещь ID {} пользователем ID {}", itemId, userId);
         return ItemMapper.toDto(item, null, null, comments);
     }
 
+    /**
+     * Получает список всех вещей владельца с пагинацией.
+     * Для каждой вещи включает данные о последнем и следующем бронировании, а также комментарии.
+     *
+     * @param ownerId Идентификатор владельца.
+     * @param from    Индекс первого элемента (для пагинации).
+     * @param size    Количество элементов на странице.
+     * @return Список DTO вещей {@link ItemResponseDto}.
+     * @throws NotFoundException если пользователь не найден.
+     */
     @Override
     public List<ItemResponseDto> getAllByOwner(Long ownerId, int from, int size) {
         findUserById(ownerId);
-        PageRequest page = PageRequest.of(from / size, size);
+        PageRequest page = createPageRequest(from, size);
 
         List<Item> items = itemRepository.findAllByOwnerIdOrderById(ownerId, page);
         if (items.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // 1. Получаем все комментарии для всех вещей
-        List<Long> itemIds = items.stream().map(Item::getId).collect(Collectors.toList());
-        Map<Long, List<CommentDto>> commentsMap = commentRepository.findAllByItemIdIn(itemIds).stream()
-                .map(CommentMapper::toDto)
-                .collect(Collectors.groupingBy(c -> items.stream()
-                        .filter(i -> i.getId().equals(c.id()))
-                        .findFirst()
-                        .orElseThrow(() -> new NotFoundException("Вещь для комментария не найдена")).getId()));
-
-
-        // 2. Получаем DTO с датами бронирования
+        Map<Long, List<CommentDto>> commentsMap = getCommentsByItemIds(items);
         List<ItemResponseDto> dtos = items.stream()
-                .map(item -> getItemResponseDtoWithOwnerBookings(
+                .map(item -> getItemResponseDtoWithBookings(
                         item, commentsMap.getOrDefault(item.getId(), Collections.emptyList())))
-                .collect(Collectors.toList());
+                .toList();
 
-        log.info("Получен список вещей владельца {}. Количество: {}", ownerId, dtos.size());
+        log.info("Получен список вещей владельца ID {}. Количество: {}", ownerId, dtos.size());
         return dtos;
     }
 
+    /**
+     * Выполняет поиск вещей по тексту в названии или описании с пагинацией.
+     * Возвращает только доступные вещи.
+     *
+     * @param text Текст для поиска.
+     * @param from Индекс первого элемента (для пагинации).
+     * @param size Количество элементов на странице.
+     * @return Список DTO вещей {@link ItemDto}.
+     */
     @Override
     public List<ItemDto> search(String text, int from, int size) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        PageRequest page = PageRequest.of(from / size, size);
-
+        PageRequest page = createPageRequest(from, size);
         List<Item> items = itemRepository.search(text, page);
-        log.info("Выполнен поиск по тексту '{}'. Найдено: {}", text, items.size());
+        log.info("Поиск по тексту '{}'. Найдено: {}", text, items.size());
         return ItemMapper.toDto(items);
     }
 
+    /**
+     * Добавляет комментарий к вещи от имени пользователя.
+     * Проверяет, что пользователь бронировал вещь и бронирование завершено.
+     *
+     * @param authorId   Идентификатор автора комментария.
+     * @param itemId     Идентификатор вещи.
+     * @param commentDto Данные комментария.
+     * @return DTO созданного комментария {@link CommentDto}.
+     * @throws NotFoundException         если пользователь или вещь не найдены.
+     * @throws BookingNotFoundException если пользователь не бронировал вещь или бронирование не завершено.
+     */
     @Transactional
     @Override
-    public CommentDto addComment(Long authorId, Long itemId, CommentCreateDto dto) {
+    public CommentDto addComment(Long authorId, Long itemId, CommentCreateDto commentDto) {
         User author = findUserById(authorId);
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID " + itemId + " не найдена."));
+        Item item = findItemById(itemId);
+        validateBookingForComment(authorId, itemId);
 
-        // Проверка: автор должен быть арендатором и бронирование должно быть завершено
-        LocalDateTime now = LocalDateTime.now();
-        List<Booking> pastBookings = bookingRepository.findAllByItemIdAndBookerIdAndStatusAndEndBefore(
-                itemId, authorId, BookingStatus.APPROVED, now);
-
-        if (pastBookings.isEmpty()) {
-            throw new BookingNotFoundException("Пользователь " + authorId + " не бронировал вещь " + itemId + " или бронирование не завершено.");
-        }
-
-        Comment comment = CommentMapper.toEntity(dto);
+        Comment comment = CommentMapper.toEntity(commentDto);
         comment.setItem(item);
         comment.setAuthor(author);
-        comment.setCreated(now);
+        comment.setCreated(LocalDateTime.now());
 
         Comment savedComment = commentRepository.save(comment);
-        log.info("Пользователь {} добавил комментарий к вещи {}", authorId, itemId);
-
+        log.info("Пользователь ID {} добавил комментарий к вещи ID {}", authorId, itemId);
         return CommentMapper.toDto(savedComment);
     }
 
     /**
-     * Приватный вспомогательный метод для получения DTO вещи с датами последнего/следующего бронирования
-     * (только для владельца).
+     * Создает объект {@link PageRequest} для пагинации на основе индекса и размера страницы.
+     *
+     * @param from Индекс первого элемента.
+     * @param size Количество элементов на странице.
+     * @return Объект {@link PageRequest}.
      */
-    private ItemResponseDto getItemResponseDtoWithOwnerBookings(Item item, List<CommentDto> comments) {
-        LocalDateTime now = LocalDateTime.now();
+    private PageRequest createPageRequest(int from, int size) {
+        return PageRequest.of(from / size, size);
+    }
 
-        // Last Booking
+    /**
+     * Получает пользователя по идентификатору.
+     *
+     * @param userId Идентификатор пользователя.
+     * @return Объект {@link User}.
+     * @throws NotFoundException если пользователь не найден.
+     */
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь ID " + userId + " не найден."));
+    }
+
+    /**
+     * Получает вещь по идентификатору.
+     *
+     * @param itemId Идентификатор вещи.
+     * @return Объект {@link Item}.
+     * @throws NotFoundException если вещь не найдена.
+     */
+    private Item findItemById(Long itemId) {
+        return itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь ID " + itemId + " не найдена."));
+    }
+
+    /**
+     * Получает список комментариев для вещи по её идентификатору.
+     *
+     * @param itemId Идентификатор вещи.
+     * @return Список DTO комментариев {@link CommentDto}.
+     */
+    private List<CommentDto> getCommentsByItemId(Long itemId) {
+        return CommentMapper.toDto(commentRepository.findAllByItemId(itemId));
+    }
+
+    /**
+     * Получает комментарии для списка вещей, сгруппированные по идентификатору вещи.
+     *
+     * @param items Список вещей.
+     * @return Карта, где ключ — идентификатор вещи, значение — список DTO комментариев.
+     */
+    private Map<Long, List<CommentDto>> getCommentsByItemIds(List<Item> items) {
+        List<Long> itemIds = items.stream().map(Item::getId).toList();
+        return commentRepository.findAllByItemIdIn(itemIds)
+                .stream()
+                .map(CommentMapper::toDto)
+                .collect(Collectors.groupingBy(CommentDto::id));
+    }
+
+    /**
+     * Проверяет, что пользователь бронировал вещь и бронирование завершено.
+     *
+     * @param authorId Идентификатор пользователя.
+     * @param itemId   Идентификатор вещи.
+     * @throws BookingNotFoundException если бронирование не найдено или не завершено.
+     */
+    private void validateBookingForComment(Long authorId, Long itemId) {
+        List<Booking> pastBookings = bookingRepository.findAllByItemIdAndBookerIdAndStatusAndEndBefore(
+                itemId, authorId, BookingStatus.APPROVED, LocalDateTime.now());
+        if (pastBookings.isEmpty()) {
+            throw new BookingNotFoundException(
+                    "Пользователь ID " + authorId + " не бронировал вещь ID " + itemId + " или бронирование не завершено.");
+        }
+    }
+
+    /**
+     * Обновляет поля вещи на основе данных из DTO.
+     *
+     * @param item    Объект вещи для обновления.
+     * @param itemDto DTO с данными для обновления.
+     */
+    private void updateItemFields(Item item, ItemDto itemDto) {
+        if (itemDto.name() != null && !itemDto.name().isBlank()) {
+            item.setName(itemDto.name());
+        }
+        if (itemDto.description() != null && !itemDto.description().isBlank()) {
+            item.setDescription(itemDto.description());
+        }
+        if (itemDto.available() != null) {
+            item.setAvailable(itemDto.available());
+        }
+    }
+
+    /**
+     * Формирует DTO вещи с данными о последнем и следующем бронировании для владельца.
+     *
+     * @param item     Объект вещи.
+     * @param comments Список комментариев к вещи.
+     * @return DTO вещи {@link ItemResponseDto} с данными о бронированиях и комментариях.
+     */
+    private ItemResponseDto getItemResponseDtoWithBookings(Item item, List<CommentDto> comments) {
+        LocalDateTime now = LocalDateTime.now();
         BookingInItemDto lastBooking = bookingRepository
                 .findFirstByItemIdAndStatusAndStartBeforeOrderByEndDesc(item.getId(), BookingStatus.APPROVED, now)
                 .map(b -> new BookingInItemDto(b.getId(), b.getBooker().getId(), b.getStart(), b.getEnd()))
                 .orElse(null);
-
-        // Next Booking
         BookingInItemDto nextBooking = bookingRepository
                 .findFirstByItemIdAndStatusAndStartAfterOrderByStartAsc(item.getId(), BookingStatus.APPROVED, now)
                 .map(b -> new BookingInItemDto(b.getId(), b.getBooker().getId(), b.getStart(), b.getEnd()))
                 .orElse(null);
-
         return ItemMapper.toDto(item, lastBooking, nextBooking, comments);
-    }
-
-    /**
-     * Вспомогательный метод для поиска пользователя и обработки NotFound.
-     * @param userId ID пользователя.
-     * @return Объект User.
-     */
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден."));
     }
 }
