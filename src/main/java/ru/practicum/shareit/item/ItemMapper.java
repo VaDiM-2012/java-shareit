@@ -49,8 +49,7 @@ public class ItemMapper {
             Item item,
             BookingInItemDto lastBooking,
             BookingInItemDto nextBooking,
-            List<CommentDto> comments)
-    {
+            List<CommentDto> comments) {
         return new ItemResponseDto(
                 item.getId(),
                 item.getName(),

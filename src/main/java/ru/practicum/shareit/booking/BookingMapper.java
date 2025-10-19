@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
  * Маппер для бронирований.
  */
 public class BookingMapper {
-    private BookingMapper() {}
+    private BookingMapper() {
+
+    }
 
     public static BookingResponseDto toDto(Booking booking) {
         return new BookingResponseDto(
