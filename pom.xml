@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
     <groupId>ru.practicum</groupId>
@@ -20,10 +20,6 @@
     </properties>
 
     <dependencies>
-        <!--
-        *** КРИТИЧЕСКОЕ ИЗМЕНЕНИЕ: ДОБАВЛЕН JPA СТАРТЕР ***
-        Этот стартер включает Hibernate и Spring Data JPA и активирует автоконфигурацию.
-        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -43,9 +39,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!--
-        *** ИЗМЕНЕНИЕ: УДАЛЕНА ВЕРСИЯ. Spring Boot Parent управляет версией. ***
-        -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -72,12 +65,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-
-        <!--
-        *** УДАЛЕНЫ НЕКОРРЕКТНЫЕ РУЧНЫЕ ЗАВИСИМОСТИ JPA/HIBERNATE ***
-        (org.springframework.data:spring-data-jpa и org.hibernate:hibernate-core)
-        Они теперь включены через spring-boot-starter-data-jpa выше.
-        -->
     </dependencies>
 
     <build>
@@ -134,6 +121,7 @@
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
+                            <version>10.3</version>
                         </dependency>
                     </dependencies>
                 </plugin>
