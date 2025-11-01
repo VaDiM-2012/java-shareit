@@ -1,34 +1,60 @@
 package ru.practicum.shareit.item.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.request.ItemRequest;
-import ru.practicum.shareit.user.User;
+import lombok.Setter;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.request.model.ItemRequest;
 
 /**
- * Основная модель сущности Вещь (Item).
- * Представляет предмет, который может быть арендован.
+ * Модель данных Вещь (Item).
  */
-@Data
+@Getter
+@Setter
+@Entity
+@Table(name = "items")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Item {
-    /** Уникальный идентификатор вещи. */
+
+    /**
+     * Уникальный идентификатор вещи.
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Краткое название. Не может быть пустым. */
+    /**
+     * Название вещи.
+     */
+    @Column(name = "name", nullable = false)
     private String name;
 
-    /** Развернутое описание. Не может быть пустым. */
+    /**
+     * Описание вещи.
+     */
+    @Column(name = "description", nullable = false)
     private String description;
 
-    /** Статус доступности для аренды. Обязательное поле. */
+    /**
+     * Доступность вещи для аренды.
+     */
+    @Column(name = "is_available", nullable = false)
     private Boolean available;
 
-    /** Владелец вещи. Обязательное поле. */
+    /**
+     * Владелец вещи.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    /** Ссылка на запрос, если вещь создана в ответ на запрос. Опционально. */
+    /**
+     * Ссылка на запрос, если вещь была создана в ответ на запрос.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
 }

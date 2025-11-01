@@ -1,36 +1,33 @@
 package ru.practicum.shareit.booking;
 
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.user.UserMapper;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Маппер для преобразования между моделью Booking и DTO BookingDto.
+ * Маппер для бронирований.
  */
-public final class BookingMapper {
-
+public class BookingMapper {
     private BookingMapper() {
 
     }
 
-    /**
-     * Преобразует модель Booking в DTO BookingDto.
-     *
-     * @param booking Модель бронирования.
-     * @return DTO бронирования.
-     */
-    public static BookingDto toBookingDto(Booking booking) {
-
-        return null;
+    public static BookingResponseDto toDto(Booking booking) {
+        return new BookingResponseDto(
+                booking.getId(),
+                booking.getStart(),
+                booking.getEnd(),
+                booking.getStatus(),
+                UserMapper.toDto(booking.getBooker()),
+                ItemMapper.toDto(booking.getItem())
+        );
     }
 
-    /**
-     * Преобразует DTO BookingDto в модель Booking.
-     *
-     * @param dto DTO бронирования.
-     * @return Модель бронирования.
-     */
-    public static Booking toBooking(BookingDto dto) {
-
-        return null;
+    public static List<BookingResponseDto> toDto(List<Booking> bookings) {
+        return bookings.stream().map(BookingMapper::toDto).collect(Collectors.toList());
     }
 }

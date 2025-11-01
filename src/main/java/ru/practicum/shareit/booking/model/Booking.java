@@ -1,38 +1,43 @@
 package ru.practicum.shareit.booking.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
-
+import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 
 /**
- * Модель сущности Бронирование (Booking).
- * Содержит информацию о периоде аренды, вещи, арендаторе и статусе.
+ * Модель бронирования.
  */
 @Getter
-@Setter // Setter нужен для поля status, которое меняется
-@NoArgsConstructor(force = true)
+@Setter
+@Entity
+@Table(name = "bookings")
+@NoArgsConstructor
 @AllArgsConstructor
 public class Booking {
-    /** Уникальный идентификатор бронирования. */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Дата и время начала аренды. Неизменяемое поле. */
-    private final LocalDateTime start;
+    @Column(name = "start_date", nullable = false)
+    private LocalDateTime start;
 
-    /** Дата и время окончания аренды. Неизменяемое поле. */
-    private final LocalDateTime end;
+    @Column(name = "end_date", nullable = false)
+    private LocalDateTime end;
 
-    /** Вещь, которую бронируют. Неизменяемое поле. */
-    private final Item item;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
-    /** Пользователь, который бронирует вещь. Неизменяемое поле. */
-    private final User booker;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booker_id", nullable = false)
+    private User booker;
 
-    /** Текущий статус бронирования (может меняться). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private BookingStatus status;
 }

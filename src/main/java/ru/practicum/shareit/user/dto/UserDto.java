@@ -2,27 +2,24 @@ package ru.practicum.shareit.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import ru.practicum.shareit.validation.CreateGroup;
 
 /**
- * Data Transfer Object для сущности User.
- * Используется для передачи данных между контроллером и сервисом,
- * а также для валидации входящих данных в контроллере.
+ * DTO для Пользователя.
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserDto {
-    private Long id;
+public record UserDto(
+        Long id,
 
-    @Size(max = 255, message = "Имя не может быть длиннее 255 символов")
-    private String name;
+        @NotNull(groups = CreateGroup.class, message = "Имя пользователя не может быть пустым")
+        @NotBlank(groups = CreateGroup.class, message = "Имя пользователя не может быть пустым")
+        @Size(max = 255, message = "Имя пользователя не может быть длиннее 255 символов")
+        String name,
 
-    @Email(message = "Email должен быть валидным")
-    @Size(max = 255, message = "Email не может быть длиннее 255 символов")
-    @NotBlank(message = "Email не может быть пустым")
-    private String email;
-}
+        @NotNull(groups = CreateGroup.class, message = "Email не может быть пустым")
+        @NotBlank(groups = CreateGroup.class, message = "Email не может быть пустым")
+        @Size(max = 512, message = "Email не может быть длиннее 512 символов")
+        @Email(message = "Некорректный email")
+        String email
+) {}
