@@ -37,124 +37,129 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRepository itemRepository;
 
     /**
-     * Создает новый запрос на вещь от имени пользователя.
-     *
-     * @param requestorId Идентификатор пользователя, создающего запрос.
-     * @param requestDto  Данные запроса.
-     * @return DTO созданного запроса {@link ItemRequestResponseDto}.
-     * @throws NotFoundException если пользователь не найден.
+     * Создаёт новый запрос на вещь от имени пользователя.
      */
     @Transactional
     @Override
     public ItemRequestResponseDto create(Long requestorId, ItemRequestCreateDto requestDto) {
+        log.info("Создание запроса на вещь: инициатор (ID) = {}, описание = '{}'", requestorId, requestDto.description());
+
         User requestor = findUserById(requestorId);
         ItemRequest request = ItemRequestMapper.toEntity(requestDto);
         request.setRequestor(requestor);
         request.setCreated(LocalDateTime.now());
 
         ItemRequest savedRequest = requestRepository.save(request);
-        log.info("Пользователь ID {} создал запрос ID {}", requestorId, savedRequest.getId());
+        log.info("Запрос успешно создан: ID = {}, инициатор = {}", savedRequest.getId(), requestorId);
         return ItemRequestMapper.toDto(savedRequest, Collections.emptyMap());
     }
 
     /**
-     * Получает список всех запросов, созданных указанным пользователем.
-     *
-     * @param requestorId Идентификатор пользователя.
-     * @return Список DTO запросов {@link ItemRequestResponseDto}.
-     * @throws NotFoundException если пользователь не найден.
+     * Получает все запросы, созданные пользователем.
      */
     @Override
     public List<ItemRequestResponseDto> getAllByRequestor(Long requestorId) {
+        log.info("Получение всех запросов пользователя: инициатор (ID) = {}", requestorId);
+
         findUserById(requestorId);
         List<ItemRequest> requests = requestRepository.findAllByRequestorIdOrderByCreatedDesc(requestorId);
+
+        if (requests.isEmpty()) {
+            log.info("У пользователя (ID {}) нет активных запросов.", requestorId);
+            return Collections.emptyList();
+        }
+
+        log.info("Найдено {} запросов для пользователя (ID {}).", requests.size(), requestorId);
         return mapToDtoWithItems(requests);
     }
 
     /**
-     * Получает список всех запросов, созданных другими пользователями, с пагинацией.
-     *
-     * @param userId Идентификатор пользователя, запрашивающего список.
-     * @param from   Индекс первого элемента (для пагинации).
-     * @param size   Количество элементов на странице.
-     * @return Список DTO запросов {@link ItemRequestResponseDto}.
-     * @throws NotFoundException если пользователь не найден.
+     * Получает все запросы других пользователей (кроме собственных) с пагинацией.
      */
     @Override
     public List<ItemRequestResponseDto> getAll(Long userId, int from, int size) {
+        log.info("Получение всех запросов других пользователей: " +
+                        "пользователь (ID) = {}, " +
+                        "пагинация: смещение = {}, размер страницы = {}",
+                userId, from, size);
+
         findUserById(userId);
         PageRequest page = createPageRequest(from, size);
         List<ItemRequest> requests = requestRepository.findAllByRequestorIdNotOrderByCreatedDesc(userId, page);
+
+        if (requests.isEmpty()) {
+            log.info("Нет доступных запросов для пользователя (ID {}).", userId);
+            return Collections.emptyList();
+        }
+
+        log.info("Найдено {} запросов, доступных пользователю (ID {}).", requests.size(), userId);
         return mapToDtoWithItems(requests);
     }
 
     /**
-     * Получает запрос по его идентификатору.
-     *
-     * @param userId    Идентификатор пользователя, запрашивающего информацию.
-     * @param requestId Идентификатор запроса.
-     * @return DTO запроса {@link ItemRequestResponseDto}.
-     * @throws NotFoundException если пользователь или запрос не найдены.
+     * Получает запрос по его ID.
      */
     @Override
     public ItemRequestResponseDto getById(Long userId, Long requestId) {
+        log.info("Получение запроса по ID: пользователь (ID) = {}, ID запроса = {}", userId, requestId);
+
         findUserById(userId);
         ItemRequest request = findRequestById(requestId);
-        log.info("Пользователь ID {} получил запрос ID {}", userId, requestId);
+
+        log.info("Запрос найден: ID = {}, описание = '{}', инициатор = {}",
+                request.getId(), request.getDescription(), request.getRequestor().getId());
         return mapToDtoWithItems(List.of(request)).getFirst();
     }
 
     /**
-     * Создает объект {@link PageRequest} для пагинации на основе индекса и размера страницы.
-     *
-     * @param from Индекс первого элемента.
-     * @param size Количество элементов на странице.
-     * @return Объект {@link PageRequest}.
+     * Создаёт объект PageRequest для пагинации.
      */
     private PageRequest createPageRequest(int from, int size) {
-        return PageRequest.of(from / size, size);
+        int page = from / size;
+        log.debug("Создание PageRequest: страница = {}, размер = {}", page, size);
+        return PageRequest.of(page, size);
     }
 
     /**
-     * Получает пользователя по идентификатору.
-     *
-     * @param userId Идентификатор пользователя.
-     * @return Объект {@link User}.
-     * @throws NotFoundException если пользователь не найден.
+     * Находит пользователя по ID.
      */
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь ID " + userId + " не найден."));
+                .orElseThrow(() -> {
+                    log.warn("Пользователь с ID {} не найден.", userId);
+                    return new NotFoundException("Пользователь ID " + userId + " не найден.");
+                });
     }
 
     /**
-     * Получает запрос по идентификатору.
-     *
-     * @param requestId Идентификатор запроса.
-     * @return Объект {@link ItemRequest}.
-     * @throws NotFoundException если запрос не найден.
+     * Находит запрос по ID.
      */
     private ItemRequest findRequestById(Long requestId) {
         return requestRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException("Запрос ID " + requestId + " не найден."));
+                .orElseThrow(() -> {
+                    log.warn("Запрос с ID {} не найден.", requestId);
+                    return new NotFoundException("Запрос ID " + requestId + " не найден.");
+                });
     }
 
     /**
-     * Преобразует список запросов в DTO с учетом связанных вещей.
-     *
-     * @param requests Список запросов.
-     * @return Список DTO запросов {@link ItemRequestResponseDto}.
+     * Преобразует список запросов в DTO с прикреплёнными вещами.
      */
     private List<ItemRequestResponseDto> mapToDtoWithItems(List<ItemRequest> requests) {
         if (requests.isEmpty()) {
+            log.debug("Список запросов пуст. Возвращён пустой список DTO.");
             return Collections.emptyList();
         }
 
         List<Long> requestIds = requests.stream().map(ItemRequest::getId).toList();
+        log.debug("Загрузка вещей, связанных с запросами: {}", requestIds);
+
         Map<Long, List<ItemDto>> itemsMap = itemRepository.findAllByRequestIdIn(requestIds)
                 .stream()
                 .map(ItemMapper::toDto)
                 .collect(Collectors.groupingBy(ItemDto::requestId));
+
+        log.debug("Найдено вещей по запросам: {} шт.", itemsMap.values().stream().mapToInt(List::size).sum());
 
         return ItemRequestMapper.toDto(requests, itemsMap);
     }

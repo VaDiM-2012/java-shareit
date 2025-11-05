@@ -12,7 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import java.util.List;
 
 /**
- * Контроллер для бронирований.
+ * Контроллер для управления бронированиями.
  */
 @Slf4j
 @RestController
@@ -23,77 +23,102 @@ public class BookingController {
     private final BookingService bookingService;
 
     /**
-     * Создает бронирование.
-     * @param bookerId ID арендатора.
-     * @param dto Данные для создания.
-     * @return Созданное бронирование.
+     * Создаёт новое бронирование.
+     *
+     * @param bookerId ID пользователя, который создаёт бронирование.
+     * @param dto      DTO с данными для создания бронирования.
+     * @return DTO созданного бронирования.
      */
     @PostMapping
     public BookingResponseDto create(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                      @Valid @RequestBody BookingCreateDto dto) {
-        log.info("POST /bookings (Booker: {}): Создание бронирования", bookerId);
+        log.info("Вызван метод создания бронирования: " +
+                        "арендатор (ID) = {}, " +
+                        "ID вещи = {}, " +
+                        "дата начала = '{}', " +
+                        "дата окончания = '{}'",
+                bookerId, dto.itemId(), dto.start(), dto.end());
         return bookingService.create(bookerId, dto);
     }
 
     /**
-     * Одобряет или отклоняет бронирование.
-     * @param ownerId ID владельца.
-     * @param bookingId ID бронирования.
-     * @param approved Флаг одобрения.
-     * @return Обновленное бронирование.
+     * Подтверждает или отклоняет бронирование.
+     *
+     * @param ownerId    ID владельца вещи.
+     * @param bookingId  ID бронирования.
+     * @param approved   true — подтвердить, false — отклонить.
+     * @return Обновлённое бронирование.
      */
     @PatchMapping("/{bookingId}")
     public BookingResponseDto approveOrReject(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                               @PathVariable Long bookingId,
                                               @RequestParam Boolean approved) {
-        log.info("PATCH /bookings/{} (Owner: {}): Установка статуса approved={}", bookingId, ownerId, approved);
+        log.info("Вызван метод подтверждения/отклонения бронирования: " +
+                        "владелец (ID) = {}, " +
+                        "ID бронирования = {}, " +
+                        "статус подтверждения = {}",
+                ownerId, bookingId, approved);
         return bookingService.approveOrReject(ownerId, bookingId, approved);
     }
 
     /**
-     * Получает бронирование по ID.
-     * @param userId ID пользователя.
+     * Получает бронирование по его ID.
+     *
+     * @param userId    ID пользователя (владельца или арендатора).
      * @param bookingId ID бронирования.
-     * @return Бронирование.
+     * @return DTO бронирования.
      */
     @GetMapping("/{bookingId}")
     public BookingResponseDto getById(@RequestHeader(USER_ID_HEADER) Long userId,
                                       @PathVariable Long bookingId) {
-        log.info("GET /bookings/{} (User: {}): Получение бронирования", bookingId, userId);
+        log.info("Вызван метод получения бронирования по ID: " +
+                        "пользователь (ID) = {}, " +
+                        "ID бронирования = {}",
+                userId, bookingId);
         return bookingService.getById(userId, bookingId);
     }
 
     /**
-     * Получает бронирования арендатора.
+     * Получает все бронирования пользователя-арендатора с пагинацией и фильтрацией по состоянию.
+     *
      * @param bookerId ID арендатора.
-     * @param state Состояние.
-     * @param from Начало пагинации.
-     * @param size Размер страницы.
-     * @return Список бронирований.
+     * @param state    Состояние бронирований (например, "ALL", "CURRENT", "PAST").
+     * @param from     Начальная позиция для пагинации.
+     * @param size     Количество элементов на странице.
+     * @return Список DTO бронирований.
      */
     @GetMapping
     public List<BookingResponseDto> getAllByBooker(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                                    @RequestParam(defaultValue = "ALL") String state,
                                                    @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                                    @Positive @RequestParam(defaultValue = "10") int size) {
-        log.info("GET /bookings (Booker: {}): Получение бронирований со статусом {}", bookerId, state);
+        log.info("Вызван метод получения всех бронирований арендатора: " +
+                        "арендатор (ID) = {}, " +
+                        "состояние фильтра = '{}', " +
+                        "пагинация: смещение = {}, размер страницы = {}",
+                bookerId, state, from, size);
         return bookingService.getAllByBooker(bookerId, state, from, size);
     }
 
     /**
-     * Получает бронирования владельца.
-     * @param ownerId ID владельца.
-     * @param state Состояние.
-     * @param from Начало пагинации.
-     * @param size Размер страницы.
-     * @return Список бронирований.
+     * Получает все бронирования вещей, принадлежащих пользователю, с пагинацией и фильтрацией по состоянию.
+     *
+     * @param ownerId ID владельца вещей.
+     * @param state   Состояние бронирований.
+     * @param from    Начальная позиция для пагинации.
+     * @param size    Количество элементов на странице.
+     * @return Список DTO бронирований.
      */
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                                   @RequestParam(defaultValue = "ALL") String state,
                                                   @PositiveOrZero @RequestParam(defaultValue = "0") int from,
                                                   @Positive @RequestParam(defaultValue = "10") int size) {
-        log.info("GET /bookings/owner (Owner: {}): Получение бронирований для его вещей со статусом {}", ownerId, state);
+        log.info("Вызван метод получения всех бронирований для вещей владельца: " +
+                        "владелец (ID) = {}, " +
+                        "состояние фильтра = '{}', " +
+                        "пагинация: смещение = {}, размер страницы = {}",
+                ownerId, state, from, size);
         return bookingService.getAllByOwner(ownerId, state, from, size);
     }
 }

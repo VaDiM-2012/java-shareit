@@ -7,22 +7,26 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.validation.CreateGroup;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemRequestDto {
 
-    @NotBlank(message = "Название вещи не может быть пустым.")
-    @Size(max = 255, message = "Название вещи не может быть длиннее 255 символов.")
-    private String name;
+    Long id;
 
-    @NotBlank(message = "Описание вещи не может быть пустым.")
-    @Size(max = 1000, message = "Описание вещи не может быть длиннее 1000 символов.")
-    private String description;
+    @NotNull(message = "Название не может быть пустым", groups = CreateGroup.class)
+    @NotBlank(message = "Название не может быть пустым", groups = CreateGroup.class)
+    @Size(max = 255, message = "Название не может быть длиннее 255 символов")
+    String name;
 
-    @NotNull(message = "Доступность вещи должна быть указана.")
-    private Boolean available;
+    @NotNull(message = "Описание не может быть пустым", groups = CreateGroup.class)
+    @NotBlank(message = "Описание не может быть пустым", groups = CreateGroup.class)
+    @Size(max = 512, message = "Описание не может быть длиннее 512 символов")
+    String description;
 
-    private Long requestId; // Опционально — для ответа на запрос
+    @NotNull(message = "Доступность не может быть пустым", groups = CreateGroup.class)
+    Boolean available;
+    Long requestId;
 }

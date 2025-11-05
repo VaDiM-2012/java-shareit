@@ -13,6 +13,6 @@ import lombok.NoArgsConstructor;
 public class ItemRequestRequestDto {
 
     @NotBlank(message = "Описание запроса не может быть пустым.")
-    @Size(max = 1000, message = "Описание запроса не может быть длиннее 1000 символов.")
+    @Size(max = 512, message = "Описание запроса не может превышать 512 символов.")
     private String description;
 }

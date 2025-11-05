@@ -20,35 +20,32 @@ import ru.practicum.shareit.request.dto.ItemRequestRequestDto;
 public class ItemRequestController {
 
     private final ItemRequestClient requestClient;
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     @PostMapping
-    public ResponseEntity<Object> create(
-            @RequestHeader("X-Sharer-User-Id") long userId,
+    public ResponseEntity<Object> create(@RequestHeader(USER_ID_HEADER) long userId,
             @Valid @RequestBody ItemRequestRequestDto requestDto) {
         log.info("POST /requests: Создание запроса пользователем {}", userId);
         return requestClient.createRequest(userId, requestDto);
     }
 
     @GetMapping
-    public ResponseEntity<Object> getOwnRequests(
-            @RequestHeader("X-Sharer-User-Id") long userId) {
-        log.info("GET /requests: Получение своих запросов, userId={}", userId);
-        return requestClient.getOwnRequests(userId);
+    public ResponseEntity<Object> getAllByRequestor(@RequestHeader(USER_ID_HEADER) Long requestorId) {
+        log.info("GET /requests: Получение своих запросов, userId={}", requestorId);
+        return requestClient.getOwnRequests(requestorId);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<Object> getAllRequests(
-            @RequestHeader("X-Sharer-User-Id") long userId,
-            @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
-            @Positive @RequestParam(defaultValue = "10") Integer size) {
+    public ResponseEntity<Object> getAll(@RequestHeader(USER_ID_HEADER) Long userId,
+                                         @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                         @Positive @RequestParam(defaultValue = "10") int size) {
         log.info("GET /requests/all: Получение чужих запросов, userId={}, from={}, size={}", userId, from, size);
         return requestClient.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<Object> getRequestById(
-            @RequestHeader("X-Sharer-User-Id") long userId,
-            @PathVariable Long requestId) {
+    public ResponseEntity<Object> getById(@RequestHeader(USER_ID_HEADER) Long userId,
+                                          @PathVariable Long requestId)  {
         log.info("GET /requests/{}: Получение запроса, userId={}", requestId, userId);
         return requestClient.getRequestById(userId, requestId);
     }
