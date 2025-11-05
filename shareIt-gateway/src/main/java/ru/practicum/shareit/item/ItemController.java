@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemRequestDto;
 
 @Controller
@@ -63,5 +64,16 @@ public class ItemController {
             @Positive @RequestParam(defaultValue = "10") Integer size) {
         log.info("GET /items/search?text={}: Поиск вещей, userId={}", text, userId);
         return itemClient.searchItems(userId, text, from, size);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public ResponseEntity<Object> addComment(
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PathVariable long itemId,
+            @RequestBody @Valid CommentDto commentDto) {
+
+        log.info("POST /items/{}/comment: Добавление комментария пользователем {}", itemId, userId);
+
+        return itemClient.addComment(userId, itemId, commentDto);
     }
 }
