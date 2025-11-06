@@ -108,20 +108,6 @@ public class ErrorHandler {
         return new ErrorResponse("Нарушение доступа", e.getMessage());
     }
 
-    /**
-     * Обрабатывает исключения, связанные с некорректным идентификатором пользователя.
-     * Перехватывает {@link InvalidUserIdException}.
-     *
-     * @param e Перехваченное исключение {@link InvalidUserIdException}.
-     * @return Объект {@link ErrorResponse} с кодом ошибки 403 и сообщением о неверном идентификаторе.
-     */
-    @ExceptionHandler(InvalidUserIdException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse handleInvalidUserIdException(final InvalidUserIdException e) {
-        log.error("Неверный ID пользователя: {}", e.getMessage(), e);
-        return new ErrorResponse("Неверный ID пользователя", e.getMessage());
-    }
-
     // --- Код ответа 404 Not Found ---
 
     /**
