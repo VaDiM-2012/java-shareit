@@ -1,4 +1,3 @@
-// gateway/src/main/java/ru/practicum/shareit/request/ItemRequestController.java
 package ru.practicum.shareit.request;
 
 import jakarta.validation.Valid;
@@ -22,19 +21,40 @@ public class ItemRequestController {
     private final ItemRequestClient requestClient;
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
+    /**
+     * Создает запрос на вещь.
+     *
+     * @param userId идентификатор пользователя.
+     * @param requestDto данные запроса.
+     * @return ответ с созданным запросом.
+     */
     @PostMapping
     public ResponseEntity<Object> create(@RequestHeader(USER_ID_HEADER) long userId,
-            @Valid @RequestBody ItemRequestRequestDto requestDto) {
+                                         @Valid @RequestBody ItemRequestRequestDto requestDto) {
         log.info("POST /requests: Создание запроса пользователем {}", userId);
         return requestClient.createRequest(userId, requestDto);
     }
 
+    /**
+     * Получает список собственных запросов.
+     *
+     * @param requestorId идентификатор пользователя.
+     * @return ответ с списком запросов.
+     */
     @GetMapping
     public ResponseEntity<Object> getAllByRequestor(@RequestHeader(USER_ID_HEADER) Long requestorId) {
         log.info("GET /requests: Получение своих запросов, userId={}", requestorId);
         return requestClient.getOwnRequests(requestorId);
     }
 
+    /**
+     * Получает список всех запросов с пагинацией.
+     *
+     * @param userId идентификатор пользователя.
+     * @param from начальный индекс для пагинации.
+     * @param size количество элементов на странице.
+     * @return ответ с списком запросов.
+     */
     @GetMapping("/all")
     public ResponseEntity<Object> getAll(@RequestHeader(USER_ID_HEADER) Long userId,
                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,
@@ -43,6 +63,13 @@ public class ItemRequestController {
         return requestClient.getAllRequests(userId, from, size);
     }
 
+    /**
+     * Получает запрос по идентификатору.
+     *
+     * @param userId идентификатор пользователя.
+     * @param requestId идентификатор запроса.
+     * @return ответ с данными запроса.
+     */
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getById(@RequestHeader(USER_ID_HEADER) Long userId,
                                           @PathVariable Long requestId)  {

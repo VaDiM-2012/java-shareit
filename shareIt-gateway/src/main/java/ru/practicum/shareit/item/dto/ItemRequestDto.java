@@ -1,4 +1,3 @@
-// gateway/src/main/java/ru/practicum/shareit/item/dto/ItemRequestDto.java
 package ru.practicum.shareit.item.dto;
 
 import jakarta.validation.constraints.NotBlank;

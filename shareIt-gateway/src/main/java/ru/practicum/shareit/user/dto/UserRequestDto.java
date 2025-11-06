@@ -1,4 +1,3 @@
-// gateway/src/main/java/ru/practicum/shareit/user/dto/UserRequestDto.java
 package ru.practicum.shareit.user.dto;
 
 import jakarta.validation.constraints.Email;

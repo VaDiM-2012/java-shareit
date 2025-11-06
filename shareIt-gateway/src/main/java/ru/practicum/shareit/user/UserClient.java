@@ -1,4 +1,3 @@
-// gateway/src/main/java/ru/practicum/shareit/user/UserClient.java
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,27 +25,52 @@ public class UserClient extends BaseClient {
         );
     }
 
-    // POST /users — создать пользователя
+    /**
+     * Создает нового пользователя.
+     *
+     * @param userDto данные пользователя.
+     * @return ответ с созданным пользователем.
+     */
     public ResponseEntity<Object> createUser(UserRequestDto userDto) {
         return post("", userDto);
     }
 
-    // PATCH /users/{userId} — обновить пользователя
+    /**
+     * Обновляет пользователя.
+     *
+     * @param userId идентификатор пользователя.
+     * @param userDto данные для обновления.
+     * @return ответ с обновленным пользователем.
+     */
     public ResponseEntity<Object> updateUser(Long userId, UserRequestDto userDto) {
         return patch("/" + userId, userDto);
     }
 
-    // GET /users/{userId} — получить по ID
+    /**
+     * Получает пользователя по идентификатору.
+     *
+     * @param userId идентификатор пользователя.
+     * @return ответ с данными пользователя.
+     */
     public ResponseEntity<Object> getUser(Long userId) {
         return get("/" + userId);
     }
 
-    // GET /users — получить всех
+    /**
+     * Получает список всех пользователей.
+     *
+     * @return ответ с списком пользователей.
+     */
     public ResponseEntity<Object> getAllUsers() {
         return get("");
     }
 
-    // DELETE /users/{userId} — удалить
+    /**
+     * Удаляет пользователя.
+     *
+     * @param userId идентификатор пользователя.
+     * @return ответ об успешном удалении.
+     */
     public ResponseEntity<Object> deleteUser(Long userId) {
         return delete("/" + userId);
     }

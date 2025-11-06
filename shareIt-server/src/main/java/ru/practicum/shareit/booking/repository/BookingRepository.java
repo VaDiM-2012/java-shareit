@@ -106,7 +106,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Pageable pageable
     );
 
-    // Дополнительные методы
     Optional<Booking> findFirstByItemIdAndStatusAndStartBeforeOrderByEndDesc(
             Long itemId,
             BookingStatus status,

@@ -8,14 +8,17 @@ import ru.practicum.shareit.user.UserMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Маппер для бронирований.
- */
 public class BookingMapper {
     private BookingMapper() {
 
     }
 
+    /**
+     * Преобразует модель бронирования в DTO.
+     *
+     * @param booking модель бронирования.
+     * @return DTO бронирования.
+     */
     public static BookingResponseDto toDto(Booking booking) {
         return new BookingResponseDto(
                 booking.getId(),
@@ -27,6 +30,12 @@ public class BookingMapper {
         );
     }
 
+    /**
+     * Преобразует список моделей бронирований в список DTO.
+     *
+     * @param bookings список моделей.
+     * @return список DTO.
+     */
     public static List<BookingResponseDto> toDto(List<Booking> bookings) {
         return bookings.stream().map(BookingMapper::toDto).collect(Collectors.toList());
     }

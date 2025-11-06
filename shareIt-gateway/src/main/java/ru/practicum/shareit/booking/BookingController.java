@@ -22,6 +22,16 @@ public class BookingController {
     private final BookingClient bookingClient;
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
+    /**
+     * Получает список бронирований пользователя.
+     *
+     * @param bookerId идентификатор пользователя.
+     * @param stateParam состояние бронирований.
+     * @param from начальный индекс для пагинации.
+     * @param size количество элементов на странице.
+     * @return ответ с списком бронирований.
+     * @throws IllegalArgumentException если неизвестное состояние.
+     */
     @GetMapping
     public ResponseEntity<Object> getAllByBooker(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                                  @RequestParam(defaultValue = "ALL") String stateParam,
@@ -33,21 +43,42 @@ public class BookingController {
         return bookingClient.getBookings(bookerId, state, from, size);
     }
 
+    /**
+     * Создает новое бронирование.
+     *
+     * @param bookerId идентификатор пользователя.
+     * @param requestDto данные для бронирования.
+     * @return ответ с созданным бронированием.
+     */
     @PostMapping
     public ResponseEntity<Object> create(@RequestHeader(USER_ID_HEADER) Long bookerId,
-                                           @RequestBody @Valid BookItemRequestDto requestDto) {
+                                         @RequestBody @Valid BookItemRequestDto requestDto) {
         log.info("POST /bookings (Booker: {}): Создание бронирования", bookerId);
         return bookingClient.bookItem(bookerId, requestDto);
     }
 
+    /**
+     * Получает информацию о бронировании по идентификатору.
+     *
+     * @param userId идентификатор пользователя.
+     * @param bookingId идентификатор бронирования.
+     * @return ответ с данными бронирования.
+     */
     @GetMapping("/{bookingId}")
     public ResponseEntity<Object> getById(@RequestHeader(USER_ID_HEADER) Long userId,
-                                             @PathVariable Long bookingId) {
+                                          @PathVariable Long bookingId) {
         log.info("GET /bookings/{} (User: {}): Получение бронирования", bookingId, userId);
         return bookingClient.getBooking(userId, bookingId);
     }
 
-    // Добавьте для approveOrReject
+    /**
+     * Одобряет или отклоняет бронирование.
+     *
+     * @param ownerId идентификатор владельца.
+     * @param bookingId идентификатор бронирования.
+     * @param approved флаг одобрения.
+     * @return ответ с обновленным бронированием.
+     */
     @PatchMapping("/{bookingId}")
     public ResponseEntity<Object> approveOrReject(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                                   @PathVariable Long bookingId,
@@ -56,7 +87,16 @@ public class BookingController {
         return bookingClient.approveOrReject(ownerId, bookingId, approved);
     }
 
-    // Для getAllByOwner
+    /**
+     * Получает список бронирований владельца.
+     *
+     * @param ownerId идентификатор владельца.
+     * @param stateParam состояние бронирований.
+     * @param from начальный индекс для пагинации.
+     * @param size количество элементов на странице.
+     * @return ответ с списком бронирований.
+     * @throws IllegalArgumentException если неизвестное состояние.
+     */
     @GetMapping("/owner")
     public ResponseEntity<Object> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                                 @RequestParam(defaultValue = "ALL") String stateParam,

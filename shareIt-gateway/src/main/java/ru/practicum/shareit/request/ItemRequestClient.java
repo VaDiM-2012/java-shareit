@@ -1,4 +1,3 @@
-// gateway/src/main/java/ru/practicum/shareit/request/ItemRequestClient.java
 package ru.practicum.shareit.request;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,17 +27,35 @@ public class ItemRequestClient extends BaseClient {
         );
     }
 
-    // POST /requests — создать запрос
+    /**
+     * Создает запрос на вещь.
+     *
+     * @param userId идентификатор пользователя.
+     * @param requestDto данные запроса.
+     * @return ответ с созданным запросом.
+     */
     public ResponseEntity<Object> createRequest(long userId, ItemRequestRequestDto requestDto) {
         return post("", userId, requestDto);
     }
 
-    // GET /requests — получить свои запросы
+    /**
+     * Получает список собственных запросов.
+     *
+     * @param userId идентификатор пользователя.
+     * @return ответ с списком запросов.
+     */
     public ResponseEntity<Object> getOwnRequests(long userId) {
         return get("", userId);
     }
 
-    // GET /requests/all — получить чужие запросы (с пагинацией)
+    /**
+     * Получает список всех запросов с пагинацией.
+     *
+     * @param userId идентификатор пользователя.
+     * @param from начальный индекс для пагинации.
+     * @param size количество элементов на странице.
+     * @return ответ с списком запросов.
+     */
     public ResponseEntity<Object> getAllRequests(long userId, Integer from, Integer size) {
         Map<String, Object> parameters = Map.of(
                 "from", from,
@@ -47,7 +64,13 @@ public class ItemRequestClient extends BaseClient {
         return get("/all?from={from}&size={size}", userId, parameters);
     }
 
-    // GET /requests/{requestId} — получить запрос по ID
+    /**
+     * Получает запрос по идентификатору.
+     *
+     * @param userId идентификатор пользователя.
+     * @param requestId идентификатор запроса.
+     * @return ответ с данными запроса.
+     */
     public ResponseEntity<Object> getRequestById(long userId, Long requestId) {
         return get("/" + requestId, userId);
     }
