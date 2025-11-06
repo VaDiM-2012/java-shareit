@@ -52,16 +52,7 @@ public class ItemResponseDtoTest {
         CommentDto comment1 = new CommentDto(1L, "Отлично!", "Пользователь А", LocalDateTime.of(2024, 10, 1, 9, 0, 0));
         List<CommentDto> comments = List.of(comment1);
 
-        ItemResponseDto dto = new ItemResponseDto(
-                itemId,
-                "Дрель",
-                "Мощная дрель",
-                true,
-                requestId,
-                lastBooking,
-                nextBooking,
-                comments
-        );
+        ItemResponseDto dto = new ItemResponseDto(itemId, "Дрель", "Мощная дрель", true, requestId, lastBooking, nextBooking, comments);
 
         // Ожидаемые строковые представления дат
         String expectedLastStartJson = "2025-01-01T10:00:00";
@@ -77,22 +68,16 @@ public class ItemResponseDtoTest {
 
         // Проверка вложенного объекта lastBooking
         assertThat(result).extractingJsonPathNumberValue("$.lastBooking.id").isEqualTo(100);
-        assertThat(result).extractingJsonPathStringValue("$.lastBooking.start")
-                .as("Проверка формата даты в lastBooking")
-                .isEqualTo(expectedLastStartJson);
+        assertThat(result).extractingJsonPathStringValue("$.lastBooking.start").as("Проверка формата даты в lastBooking").isEqualTo(expectedLastStartJson);
 
         // Проверка вложенного объекта nextBooking
         assertThat(result).extractingJsonPathNumberValue("$.nextBooking.id").isEqualTo(101);
-        assertThat(result).extractingJsonPathStringValue("$.nextBooking.start")
-                .as("Проверка формата даты в nextBooking")
-                .isEqualTo(expectedNextStartJson);
+        assertThat(result).extractingJsonPathStringValue("$.nextBooking.start").as("Проверка формата даты в nextBooking").isEqualTo(expectedNextStartJson);
 
         // Проверка списка комментариев
         assertThat(result).extractingJsonPathValue("$.comments").asList().hasSize(1);
         assertThat(result).extractingJsonPathStringValue("$.comments[0].text").isEqualTo("Отлично!");
-        assertThat(result).extractingJsonPathStringValue("$.comments[0].created")
-                .as("Проверка формата даты в CommentDto")
-                .isEqualTo(expectedCommentCreatedJson);
+        assertThat(result).extractingJsonPathStringValue("$.comments[0].created").as("Проверка формата даты в CommentDto").isEqualTo(expectedCommentCreatedJson);
     }
 
     /**
@@ -137,16 +122,8 @@ public class ItemResponseDtoTest {
         LocalDateTime expectedCommentCreated = LocalDateTime.of(2024, 11, 5, 12, 0, 0);
         CommentDto expectedComment = new CommentDto(5L, "Очень доволен!", "Юзер 1", expectedCommentCreated);
 
-        ItemResponseDto expectedDto = new ItemResponseDto(
-                2L,
-                "Телескоп",
-                "Мощный телескоп",
-                true,
-                20L,
-                expectedLastBooking,
-                null, // nextBooking в JSON был null
-                List.of(expectedComment)
-        );
+        ItemResponseDto expectedDto = new ItemResponseDto(2L, "Телескоп", "Мощный телескоп", true, 20L, expectedLastBooking, null, // nextBooking в JSON был null
+                List.of(expectedComment));
 
         // 2. Действие: Десериализация JSON
         ItemResponseDto resultDto = this.jacksonTester.parseObject(jsonContent);
@@ -155,14 +132,8 @@ public class ItemResponseDtoTest {
         assertThat(resultDto).isEqualTo(expectedDto);
 
         // Дополнительная детальная проверка вложенных данных
-        assertThat(resultDto.lastBooking().start())
-                .as("Проверка даты начала в lastBooking после десериализации")
-                .isEqualTo(expectedLastStart);
-        assertThat(resultDto.nextBooking())
-                .as("Проверка, что nextBooking десериализован как null")
-                .isNull();
-        assertThat(resultDto.comments().getFirst().created())
-                .as("Проверка даты создания комментария после десериализации")
-                .isEqualTo(expectedCommentCreated);
+        assertThat(resultDto.lastBooking().start()).as("Проверка даты начала в lastBooking после десериализации").isEqualTo(expectedLastStart);
+        assertThat(resultDto.nextBooking()).as("Проверка, что nextBooking десериализован как null").isNull();
+        assertThat(resultDto.comments().getFirst().created()).as("Проверка даты создания комментария после десериализации").isEqualTo(expectedCommentCreated);
     }
 }

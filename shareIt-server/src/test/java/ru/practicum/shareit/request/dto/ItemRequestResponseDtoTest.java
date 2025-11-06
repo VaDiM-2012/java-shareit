@@ -6,7 +6,7 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
 import org.springframework.test.context.ActiveProfiles;
-import ru.practicum.shareit.item.dto.ItemDto; // Импорт вложенного DTO
+import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -45,12 +45,7 @@ public class ItemRequestResponseDtoTest {
         ItemDto item2 = new ItemDto(2L, "Пила", "Электрическая пила", true, requestId);
         List<ItemDto> items = List.of(item1, item2);
 
-        ItemRequestResponseDto dto = new ItemRequestResponseDto(
-                requestId,
-                "Ищу инструменты для ремонта",
-                createdDateTime,
-                items
-        );
+        ItemRequestResponseDto dto = new ItemRequestResponseDto(requestId, "Ищу инструменты для ремонта", createdDateTime, items);
 
         String expectedCreatedJson = "2025-03-15T12:12:00";
 
@@ -62,18 +57,12 @@ public class ItemRequestResponseDtoTest {
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("Ищу инструменты для ремонта");
 
         // Проверка формата LocalDateTime
-        assertThat(result).extractingJsonPathStringValue("$.created")
-                .as("Проверка формата сериализации даты создания")
-                .isEqualTo(expectedCreatedJson);
+        assertThat(result).extractingJsonPathStringValue("$.created").as("Проверка формата сериализации даты создания").isEqualTo(expectedCreatedJson);
 
         // Проверка вложенного списка items.
         // Используем .extractingJsonPathValue("$.items") для получения списка,
         // а затем AssertJ .asList().hasSize() для проверки его размера.
-        assertThat(result)
-                .extractingJsonPathValue("$.items")
-                .asList()
-                .as("Проверка размера списка items")
-                .hasSize(2);
+        assertThat(result).extractingJsonPathValue("$.items").asList().as("Проверка размера списка items").hasSize(2);
         // Проверка полей первого вложенного элемента
         assertThat(result).extractingJsonPathNumberValue("$.items[0].id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.items[0].name").isEqualTo("Дрель");
@@ -91,7 +80,7 @@ public class ItemRequestResponseDtoTest {
     void testDeserialize() throws IOException {
         // 1. Подготовка: JSON-строка, содержащая вложенный список
         String jsonContent = """
-                {
+                    {
                     "id": 20,
                     "description": "Срочно нужен ноутбук",
                     "created": "2025-04-01T15:00:00",
@@ -111,20 +100,13 @@ public class ItemRequestResponseDtoTest {
 
         // Ожидаемые DTO-объекты
         ItemDto expectedItem = new ItemDto(5L, "MacBook", "Новый ноутбук", true, 20L);
-        ItemRequestResponseDto expectedDto = new ItemRequestResponseDto(
-                20L,
-                "Срочно нужен ноутбук",
-                expectedCreated,
-                List.of(expectedItem)
-        );
+        ItemRequestResponseDto expectedDto = new ItemRequestResponseDto(20L, "Срочно нужен ноутбук", expectedCreated, List.of(expectedItem));
 
         // 2. Действие: Десериализация JSON
         ItemRequestResponseDto resultDto = this.jacksonTester.parseObject(jsonContent);
 
         // 3. Проверка: Сравнение полученного объекта с ожидаемым
-        assertThat(resultDto)
-                .as("Проверка полного соответствия десериализованного объекта")
-                .isEqualTo(expectedDto);
+        assertThat(resultDto).as("Проверка полного соответствия десериализованного объекта").isEqualTo(expectedDto);
 
         // Дополнительная детальная проверка
         assertThat(resultDto.created()).isEqualTo(expectedCreated);

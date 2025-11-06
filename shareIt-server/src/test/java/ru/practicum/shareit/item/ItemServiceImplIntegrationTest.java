@@ -53,7 +53,7 @@ class ItemServiceImplIntegrationTest {
     private Item saveItem(User owner, String name) {
         return itemRepository.save(new Item(null, name, "Описание " + name, true, owner, null));
     }
-    
+
     /**
      * Тест проверяет успешное добавление комментария к вещи и его сохранение в БД,
      * а также проверку наличия завершенного бронирования.
@@ -84,7 +84,7 @@ class ItemServiceImplIntegrationTest {
         assertEquals(author.getId(), commentsInDb.getFirst().getAuthor().getId(), "ID автора комментария должен совпадать.");
         assertEquals(item.getId(), commentsInDb.getFirst().getItem().getId(), "ID вещи должен совпадать.");
     }
-    
+
     /**
      * Тест проверяет, что комментарий нельзя добавить без завершенного бронирования.
      */
@@ -94,11 +94,10 @@ class ItemServiceImplIntegrationTest {
         User owner = saveUser("Owner5", "owner5@mail.com");
         User author = saveUser("Author5", "author5@mail.com");
         Item item = saveItem(owner, "Стул");
-        
+
         CommentCreateDto commentDto = new CommentCreateDto("Хочу написать комментарий, но не бронировал!");
 
         // ACT & ASSERT: Попытка добавить комментарий должна вызвать исключение.
-        assertThrows(BookingNotFoundException.class, () -> itemService.addComment(author.getId(), item.getId(), commentDto),
-                "Добавление комментария без завершенного бронирования должно вызвать BookingNotFoundException.");
+        assertThrows(BookingNotFoundException.class, () -> itemService.addComment(author.getId(), item.getId(), commentDto), "Добавление комментария без завершенного бронирования должно вызвать BookingNotFoundException.");
     }
 }

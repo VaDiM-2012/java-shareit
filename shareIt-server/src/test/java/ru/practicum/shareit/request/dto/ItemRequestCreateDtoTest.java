@@ -41,9 +41,7 @@ public class ItemRequestCreateDtoTest {
         JsonContent<ItemRequestCreateDto> result = this.jacksonTester.write(dto);
 
         // 3. Проверка (Assert): Проверяем JSON-поле
-        assertThat(result).extractingJsonPathStringValue("$.description")
-                .as("Проверка сериализации поля 'description'")
-                .isEqualTo(description);
+        assertThat(result).extractingJsonPathStringValue("$.description").as("Проверка сериализации поля 'description'").isEqualTo(description);
 
         // Проверка, что нет других полей
         assertThat(result).extractingJsonPathMapValue("$").hasSize(1);
@@ -67,13 +65,8 @@ public class ItemRequestCreateDtoTest {
         ItemRequestCreateDto resultDto = this.jacksonTester.parseObject(jsonContent);
 
         // 3. Проверка (Assert): Сравнение полученного объекта с ожидаемым
-        assertThat(resultDto)
-                .as("Проверка полного соответствия десериализованного объекта")
-                .isEqualTo(expectedDto);
-        
+        assertThat(resultDto).as("Проверка полного соответствия десериализованного объекта").isEqualTo(expectedDto);
         // Дополнительная проверка поля
-        assertThat(resultDto.description())
-                .as("Проверка десериализации поля 'description'")
-                .isEqualTo(expectedDescription);
+        assertThat(resultDto.description()).as("Проверка десериализации поля 'description'").isEqualTo(expectedDescription);
     }
 }

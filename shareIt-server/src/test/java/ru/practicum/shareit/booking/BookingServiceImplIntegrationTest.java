@@ -64,12 +64,10 @@ class BookingServiceImplIntegrationTest {
         User owner = saveUser("Owner", "owner@mail.com");
         User booker = saveUser("Booker", "booker@mail.com");
         Item item = saveItem(owner, "Дрель");
-        
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(2);
-        
-        BookingCreateDto bookingDto = new BookingCreateDto(item.getId(), start, end);
 
+        BookingCreateDto bookingDto = new BookingCreateDto(item.getId(), start, end);
         // ACT: Вызов тестируемого метода сервиса
         BookingResponseDto createdBookingDto = bookingService.create(booker.getId(), bookingDto);
 
@@ -91,12 +89,10 @@ class BookingServiceImplIntegrationTest {
         User owner = saveUser("Owner", "owner2@mail.com");
         User booker = saveUser("Booker", "booker2@mail.com");
         Item item = saveItem(owner, "Молоток");
-        
+
         LocalDateTime start = LocalDateTime.now().plusDays(1);
         LocalDateTime end = LocalDateTime.now().plusDays(2);
-        
         Booking waitingBooking = saveBooking(booker, item, start, end, BookingStatus.WAITING);
-
         // ACT: Владелец одобряет бронирование
         BookingResponseDto approvedBookingDto = bookingService.approveOrReject(owner.getId(), waitingBooking.getId(), true);
 
@@ -107,7 +103,7 @@ class BookingServiceImplIntegrationTest {
         assertEquals(BookingStatus.APPROVED, savedBooking.get().getStatus(), "Статус должен быть APPROVED после одобрения.");
         assertEquals(approvedBookingDto.status(), savedBooking.get().getStatus(), "Статус в DTO должен совпадать.");
     }
-    
+
     /**
      * Тест проверяет фильтрацию бронирований по состоянию "PAST" для арендатора.
      */
