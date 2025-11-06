@@ -111,8 +111,7 @@ public class ItemResponseDtoTest {
                             "created": "2024-11-05T12:00:00"
                         }
                     ]
-                }
-                """;
+                }""";
 
         // Ожидаемые DTO-объекты
         LocalDateTime expectedLastStart = LocalDateTime.of(2025, 3, 1, 10, 0, 0);
@@ -122,8 +121,7 @@ public class ItemResponseDtoTest {
         LocalDateTime expectedCommentCreated = LocalDateTime.of(2024, 11, 5, 12, 0, 0);
         CommentDto expectedComment = new CommentDto(5L, "Очень доволен!", "Юзер 1", expectedCommentCreated);
 
-        ItemResponseDto expectedDto = new ItemResponseDto(2L, "Телескоп", "Мощный телескоп", true, 20L, expectedLastBooking, null, // nextBooking в JSON был null
-                List.of(expectedComment));
+        ItemResponseDto expectedDto = new ItemResponseDto(2L, "Телескоп", "Мощный телескоп", true, 20L, expectedLastBooking, null, List.of(expectedComment));
 
         // 2. Действие: Десериализация JSON
         ItemResponseDto resultDto = this.jacksonTester.parseObject(jsonContent);

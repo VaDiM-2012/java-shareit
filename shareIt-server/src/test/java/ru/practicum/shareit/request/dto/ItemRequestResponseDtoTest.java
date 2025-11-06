@@ -80,7 +80,7 @@ public class ItemRequestResponseDtoTest {
     void testDeserialize() throws IOException {
         // 1. Подготовка: JSON-строка, содержащая вложенный список
         String jsonContent = """
-                    {
+                {
                     "id": 20,
                     "description": "Срочно нужен ноутбук",
                     "created": "2025-04-01T15:00:00",
@@ -93,8 +93,7 @@ public class ItemRequestResponseDtoTest {
                             "requestId": 20
                         }
                     ]
-                }
-                """;
+                }""";
 
         LocalDateTime expectedCreated = LocalDateTime.of(2025, 4, 1, 15, 0, 0);
 

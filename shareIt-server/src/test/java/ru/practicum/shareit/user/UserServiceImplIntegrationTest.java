@@ -31,7 +31,7 @@ class UserServiceImplIntegrationTest {
     private User saveUser(String name, String email) {
         return userRepository.save(new User(null, name, email));
     }
-    
+
     /**
      * Тест проверяет успешное обновление имени и email пользователя и корректное сохранение изменений в БД.
      */
@@ -71,8 +71,9 @@ class UserServiceImplIntegrationTest {
         userService.update(userId, updateDto);
 
         // ASSERT: Проверка состояния базы данных.
-        User updatedUserInDb = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        
+        User updatedUserInDb = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
         assertEquals("NewNameOnly", updatedUserInDb.getName(), "Имя должно быть обновлено.");
         assertEquals("keep@mail.com", updatedUserInDb.getEmail(), "Email должен остаться прежним.");
     }
