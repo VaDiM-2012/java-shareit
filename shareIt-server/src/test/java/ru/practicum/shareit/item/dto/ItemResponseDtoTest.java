@@ -88,30 +88,29 @@ public class ItemResponseDtoTest {
      */
     @Test
     void testDeserialize() throws IOException {
-        // 1. Подготовка: JSON-строка со сложной структурой
-        String jsonContent = """
-            {
-                "id": 2,
-                "name": "Телескоп",
-                "description": "Мощный телескоп",
-                "available": true,
-                "requestId": 20,
-                "lastBooking": {
-                    "id": 200,
-                    "bookerId": 7,
-                    "start": "2025-03-01T10:00:00",
-                    "end": "2025-03-02T10:00:00"
-                },
-                "nextBooking": null,
-                "comments": [
-                    {
-                        "id": 5,
-                        "text": "Очень доволен!",
-                        "authorName": "Юзер 1",
-                        "created": "2024-11-05T12:00:00"
-                    }
-                ]
-            }""";
+        // 1. Подготовка: JSON-строка со сложной структурой (в виде обычной строки)
+        String jsonContent = "{"
+                + "\"id\": 2,"
+                + "\"name\": \"Телескоп\","
+                + "\"description\": \"Мощный телескоп\","
+                + "\"available\": true,"
+                + "\"requestId\": 20,"
+                + "\"lastBooking\": {"
+                + "\"id\": 200,"
+                + "\"bookerId\": 7,"
+                + "\"start\": \"2025-03-01T10:00:00\","
+                + "\"end\": \"2025-03-02T10:00:00\""
+                + "},"
+                + "\"nextBooking\": null,"
+                + "\"comments\": ["
+                + "{"
+                + "\"id\": 5,"
+                + "\"text\": \"Очень доволен!\","
+                + "\"authorName\": \"Юзер 1\","
+                + "\"created\": \"2024-11-05T12:00:00\""
+                + "}"
+                + "]"
+                + "}";
 
         // Ожидаемые DTO-объекты
         LocalDateTime expectedLastStart = LocalDateTime.of(2025, 3, 1, 10, 0, 0);
