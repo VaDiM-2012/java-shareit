@@ -65,28 +65,6 @@ public class ItemRequestControllerTest {
     }
 
     /**
-     * Тестирует создание запроса с некорректным описанием (POST /requests).
-     * Ожидается статус 400 и сообщение об ошибке валидации.
-     */
-    @Test
-    void createRequest_InvalidData_ReturnsBadRequest() throws Exception {
-        // Arrange
-        ItemRequestCreateDto requestDto = new ItemRequestCreateDto("");
-
-        // Act & Assert
-        mockMvc.perform(post("/requests")
-                        .header(USER_ID_HEADER, 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error", is("Ошибка валидации DTO")))
-                .andExpect(jsonPath("$.description", is("Описание запроса не может быть пустым.")));
-
-        verify(requestService, never()).create(anyLong(), any(ItemRequestCreateDto.class));
-    }
-
-    /**
      * Тестирует получение всех запросов пользователя (GET /requests).
      * Ожидается статус 200 и корректный JSON-ответ.
      */

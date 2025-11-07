@@ -70,27 +70,6 @@ public class ItemControllerTest {
     }
 
     /**
-     * Тестирует создание вещи с некорректными данными (POST /items).
-     * Ожидается статус 400 и сообщение об ошибке валидации.
-     */
-    @Test
-    void createItem_InvalidData_ReturnsBadRequest() throws Exception {
-        // Arrange
-        ItemDto itemDto = new ItemDto(null, "", "", null, null);
-
-        // Act & Assert
-        mockMvc.perform(post("/items")
-                        .header(USER_ID_HEADER, 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(itemDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error", is("Ошибка валидации DTO")));
-
-        verify(itemService, never()).create(anyLong(), any(ItemDto.class));
-    }
-
-    /**
      * Тестирует обновление вещи (PATCH /items/{itemId}) с корректными данными.
      * Ожидается статус 200 и корректный JSON-ответ.
      */

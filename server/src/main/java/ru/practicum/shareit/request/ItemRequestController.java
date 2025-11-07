@@ -1,13 +1,11 @@
 package ru.practicum.shareit.request;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
+
 import java.util.List;
 
 /**
@@ -27,7 +25,7 @@ public class ItemRequestController {
      */
     @PostMapping
     public ItemRequestResponseDto create(@RequestHeader(USER_ID_HEADER) Long requestorId,
-                                         @Valid @RequestBody ItemRequestCreateDto dto) {
+                                         @RequestBody ItemRequestCreateDto dto) {
         log.info("Вызван метод создания запроса на вещь: " +
                         "инициатор (ID) = {}, " +
                         "описание запроса = '{}'",
@@ -49,8 +47,8 @@ public class ItemRequestController {
      */
     @GetMapping("/all")
     public List<ItemRequestResponseDto> getAll(@RequestHeader(USER_ID_HEADER) Long userId,
-                                               @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                               @Positive @RequestParam(defaultValue = "10") int size) {
+                                               @RequestParam(defaultValue = "0") int from,
+                                               @RequestParam(defaultValue = "10") int size) {
         log.info("Вызван метод получения всех запросов, кроме своих: " +
                         "пользователь (ID) = {}, " +
                         "пагинация: смещение = {}, размер страницы = {}",

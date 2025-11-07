@@ -1,17 +1,12 @@
 package ru.practicum.shareit.item;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.comment.dto.CommentCreateDto;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
-import ru.practicum.shareit.validation.CreateGroup;
 
 import java.util.List;
 
@@ -32,7 +27,7 @@ public class ItemController {
      */
     @PostMapping
     public ItemDto create(@RequestHeader(USER_ID_HEADER) Long ownerId,
-                          @Validated(CreateGroup.class) @RequestBody ItemDto itemDto) {
+                          @RequestBody ItemDto itemDto) {
         log.info("Вызван метод создания вещи: " +
                         "владелец (ID) = {}, " +
                         "название = '{}', " +
@@ -48,7 +43,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader(USER_ID_HEADER) Long ownerId,
                           @PathVariable Long itemId,
-                          @Validated @RequestBody ItemDto itemDto) {
+                          @RequestBody ItemDto itemDto) {
         log.info("Вызван метод обновления вещи: " +
                         "владелец (ID) = {}, " +
                         "ID вещи = {}, " +
@@ -77,8 +72,8 @@ public class ItemController {
      */
     @GetMapping
     public List<ItemResponseDto> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long ownerId,
-                                               @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                               @Positive @RequestParam(defaultValue = "10") int size) {
+                                               @RequestParam(defaultValue = "0") int from,
+                                               @RequestParam(defaultValue = "10") int size) {
         log.info("Вызван метод получения всех вещей владельца: " +
                         "владелец (ID) = {}, " +
                         "пагинация: смещение = {}, размер страницы = {}",
@@ -91,8 +86,8 @@ public class ItemController {
      */
     @GetMapping("/search")
     public List<ItemDto> search(@RequestParam String text,
-                                @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                @Positive @RequestParam(defaultValue = "10") int size) {
+                                @RequestParam(defaultValue = "0") int from,
+                                @RequestParam(defaultValue = "10") int size) {
         log.info("Вызван метод поиска вещей по тексту: " +
                         "поисковый запрос = '{}', " +
                         "пагинация: смещение = {}, размер страницы = {}",
@@ -106,7 +101,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(USER_ID_HEADER) Long authorId,
                                  @PathVariable Long itemId,
-                                 @Valid @RequestBody CommentCreateDto dto) {
+                                 @RequestBody CommentCreateDto dto) {
         log.info("Вызван метод добавления комментария: " +
                         "автор (ID) = {}, " +
                         "ID вещи = {}, " +

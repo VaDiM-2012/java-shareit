@@ -63,27 +63,6 @@ public class UserControllerTest {
     }
 
     /**
-     * Тестирует создание пользователя с некорректным email (POST /users).
-     * Ожидается статус 400 и сообщение об ошибке валидации.
-     */
-    @Test
-    void createUser_InvalidEmail_ReturnsBadRequest() throws Exception {
-        // Arrange
-        UserDto userDto = new UserDto(null, "Test User", "invalid-email");
-
-        // Act & Assert
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error", is("Ошибка валидации DTO")))
-                .andExpect(jsonPath("$.description", is("Некорректный email")));
-
-        verify(userService, never()).create(any(UserDto.class));
-    }
-
-    /**
      * Тестирует создание пользователя с существующим email (POST /users).
      * Ожидается статус 409 и сообщение о конфликте.
      */

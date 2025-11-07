@@ -1,13 +1,9 @@
 package ru.practicum.shareit.user;
 
-import jakarta.validation.Valid;
-import jakarta.validation.groups.Default;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.validation.CreateGroup;
 
 import java.util.List;
 
@@ -26,9 +22,7 @@ public class UserController {
      * Создаёт нового пользователя.
      */
     @PostMapping
-    public UserDto create(
-            @Validated({Default.class, CreateGroup.class})
-            @Valid @RequestBody UserDto userDto) {
+    public UserDto create(@RequestBody UserDto userDto) {
         log.info("Вызван метод создания пользователя: " +
                         "имя = '{}', " +
                         "email = '{}'",
@@ -40,9 +34,8 @@ public class UserController {
      * Обновляет данные существующего пользователя.
      */
     @PatchMapping("/{userId}")
-    public UserDto update(
-            @PathVariable Long userId,
-            @Validated @RequestBody UserDto userDto) {
+    public UserDto update(@PathVariable Long userId,
+                          @RequestBody UserDto userDto) {
         log.info("Вызван метод обновления пользователя: " +
                         "ID пользователя = {}, " +
                         "новые данные — имя = '{}', " +

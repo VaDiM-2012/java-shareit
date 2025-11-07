@@ -1,8 +1,5 @@
 package ru.practicum.shareit.booking;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +28,7 @@ public class BookingController {
      */
     @PostMapping
     public BookingResponseDto create(@RequestHeader(USER_ID_HEADER) Long bookerId,
-                                     @Valid @RequestBody BookingCreateDto dto) {
+                                     @RequestBody BookingCreateDto dto) {
         log.info("Вызван метод создания бронирования: " +
                         "арендатор (ID) = {}, " +
                         "ID вещи = {}, " +
@@ -90,8 +87,8 @@ public class BookingController {
     @GetMapping
     public List<BookingResponseDto> getAllByBooker(@RequestHeader(USER_ID_HEADER) Long bookerId,
                                                    @RequestParam(defaultValue = "ALL") String state,
-                                                   @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                   @Positive @RequestParam(defaultValue = "10") int size) {
+                                                   @RequestParam(defaultValue = "0") int from,
+                                                   @RequestParam(defaultValue = "10") int size) {
         log.info("Вызван метод получения всех бронирований арендатора: " +
                         "арендатор (ID) = {}, " +
                         "состояние фильтра = '{}', " +
@@ -112,8 +109,8 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingResponseDto> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long ownerId,
                                                   @RequestParam(defaultValue = "ALL") String state,
-                                                  @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                  @Positive @RequestParam(defaultValue = "10") int size) {
+                                                  @RequestParam(defaultValue = "0") int from,
+                                                  @RequestParam(defaultValue = "10") int size) {
         log.info("Вызван метод получения всех бронирований для вещей владельца: " +
                         "владелец (ID) = {}, " +
                         "состояние фильтра = '{}', " +
