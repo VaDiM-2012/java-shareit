@@ -13,19 +13,19 @@ import ru.practicum.shareit.validation.CreateGroup;
 @AllArgsConstructor
 public class ItemRequestDto {
 
-    Long id;
+    private Long id;
 
     @NotNull(message = "Название не может быть пустым", groups = CreateGroup.class)
     @NotBlank(message = "Название не может быть пустым", groups = CreateGroup.class)
     @Size(max = 255, message = "Название не может быть длиннее 255 символов")
-    String name;
+    private String name;
 
     @NotNull(message = "Описание не может быть пустым", groups = CreateGroup.class)
     @NotBlank(message = "Описание не может быть пустым", groups = CreateGroup.class)
     @Size(max = 512, message = "Описание не может быть длиннее 512 символов")
-    String description;
+    private String description;
 
     @NotNull(message = "Доступность не может быть пустым", groups = CreateGroup.class)
-    Boolean available;
-    Long requestId;
+    private Boolean available;
+    private Long requestId;
 }

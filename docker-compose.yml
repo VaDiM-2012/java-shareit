@@ -1,6 +1,8 @@
 services:
   gateway:
-    build: gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
     image: gateway
     container_name: gateway
     ports:
@@ -11,13 +13,16 @@ services:
       - SHAREIT_SERVER_URL=http://server:9090
 
   server:
-    build: server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     image: server
     container_name: server
     ports:
       - "9090:9090"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
       - SPRING_DATASOURCE_USERNAME=shareit
@@ -34,7 +39,7 @@ services:
       - POSTGRES_USER=shareit
       - POSTGRES_DB=shareit
     healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      test: ["CMD-SHELL", "pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER"]
       timeout: 5s
       interval: 5s
       retries: 10
